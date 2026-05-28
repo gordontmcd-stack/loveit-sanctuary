@@ -1438,6 +1438,10 @@ canvas#sigCanvas { display: block; width: 100%; touch-action: none; }
     <div class="modal-body" id="clientDetailBody"></div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('clientDetailModal')">Close</button>
+      <button class="btn btn-ghost" onclick="App.openEditClient(App.activeClientId)">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+        Edit Client
+      </button>
       <button class="btn btn-wa" id="cdm_wa" onclick="">
         <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
         WhatsApp Client
@@ -1757,6 +1761,70 @@ canvas#sigCanvas { display: block; width: 100%; touch-action: none; }
       <button class="btn btn-primary" onclick="Auth.saveNewPassword()">
         <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
         Update Password
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT CLIENT MODAL -->
+<div class="modal-overlay" id="editClientModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Edit Client Profile</h3>
+      <button class="btn-close-modal" onclick="closeModal('editClientModal')">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="ec_id">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">First Name</label>
+          <input type="text" class="form-input" id="ec_first" placeholder="First name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Last Name</label>
+          <input type="text" class="form-input" id="ec_last" placeholder="Last name">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Phone / WhatsApp</label>
+          <input type="tel" class="form-input" id="ec_phone" placeholder="e.g. 082 555 1234">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" class="form-input" id="ec_email" placeholder="e.g. name@email.com">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Date of Birth</label>
+          <input type="date" class="form-input" id="ec_dob">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tag</label>
+          <select class="form-input" id="ec_tag">
+            <option value="New">New Client</option>
+            <option value="VIP">VIP</option>
+            <option value="Lapsed">Lapsed</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notes</label>
+        <textarea class="form-input" id="ec_notes" placeholder="Allergies, preferences, health notes…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('editClientModal')">Cancel</button>
+      <button class="btn btn-danger btn-sm" onclick="App.deleteClient()">
+        <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+        Delete Client
+      </button>
+      <button class="btn btn-primary" onclick="App.saveEditClient()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+        Save Changes
       </button>
     </div>
   </div>
@@ -2250,7 +2318,13 @@ const App = {
       return;
     }
     grid.innerHTML = cls.map(c=>`
-      <div class="client-card" onclick="App.viewClient('${c.id}')">
+      <div class="client-card" style="position:relative;" onclick="App.viewClient('${c.id}')"
+           onmouseenter="this.querySelector('.card-edit-btn').style.opacity='1'"
+           onmouseleave="this.querySelector('.card-edit-btn').style.opacity='0'">
+        <button class="btn btn-ghost btn-xs card-edit-btn" style="position:absolute;top:12px;right:12px;opacity:0;transition:opacity .15s;z-index:2;" onclick="event.stopPropagation();App.openEditClient('${c.id}')">
+          <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+          Edit
+        </button>
         <div class="client-card-top">
           <div class="avatar" style="background:${this.avatarColor(c.id)};">${c.first[0]}${c.last[0]}</div>
           <div style="flex:1;min-width:0;">
@@ -3277,6 +3351,63 @@ const Auth = {
       this.showLogin();
     }
   }
+};
+
+/* ── EDIT CLIENT ─────────────────────────────────────── */
+App.openEditClient = function(id) {
+  const c = this.clientById(id);
+  if(!c) return;
+  // close detail modal if open
+  closeModal('clientDetailModal');
+  document.getElementById('ec_id').value    = c.id;
+  document.getElementById('ec_first').value = c.first;
+  document.getElementById('ec_last').value  = c.last;
+  document.getElementById('ec_phone').value = c.phone  || '';
+  document.getElementById('ec_email').value = c.email  || '';
+  document.getElementById('ec_dob').value   = c.dob    || '';
+  document.getElementById('ec_tag').value   = c.tag    || 'New';
+  document.getElementById('ec_notes').value = c.notes  || '';
+  openModal('editClientModal');
+};
+
+App.saveEditClient = function() {
+  const id    = document.getElementById('ec_id').value;
+  const first = document.getElementById('ec_first').value.trim();
+  const last  = document.getElementById('ec_last').value.trim();
+  if(!first || !last) { toast('First and last name are required.', 'error'); return; }
+  const c = this.clients.find(x => x.id === id);
+  if(!c) { toast('Client not found.', 'error'); return; }
+  c.first  = first;
+  c.last   = last;
+  c.phone  = document.getElementById('ec_phone').value.trim();
+  c.email  = document.getElementById('ec_email').value.trim();
+  c.dob    = document.getElementById('ec_dob').value;
+  c.tag    = document.getElementById('ec_tag').value;
+  c.notes  = document.getElementById('ec_notes').value.trim();
+  this.save();
+  this.seedModals();
+  closeModal('editClientModal');
+  toast(first + ' ' + last + ' updated successfully.', 'success');
+  if(this.currentPage === 'clients') this.renderClients();
+  if(this.currentPage === 'dashboard') this.renderDashboard();
+};
+
+App.deleteClient = function() {
+  const id = document.getElementById('ec_id').value;
+  const c  = this.clientById(id);
+  if(!c) return;
+  if(!confirm(`Remove ${c.first} ${c.last} from Loveit Sanctuary? This cannot be undone.`)) return;
+  this.clients    = this.clients.filter(x => x.id !== id);
+  this.bookings   = this.bookings.filter(x => x.clientId !== id);
+  this.memberships= this.memberships.filter(x => x.clientId !== id);
+  this.invoices   = this.invoices.filter(x => x.clientId !== id);
+  this.intake     = this.intake.filter(x => x.clientId !== id);
+  this.save();
+  this.seedModals();
+  closeModal('editClientModal');
+  toast(c.first + ' ' + c.last + ' removed.', 'success');
+  this.updateReengageBadge();
+  if(this.currentPage === 'clients') this.renderClients();
 };
 
 // Hook users page render into App navigation
