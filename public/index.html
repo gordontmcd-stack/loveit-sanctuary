@@ -2237,7 +2237,8 @@ const App = {
       invoices:    ['Invoices & Retail', 'Treatment invoices, product sales and payment tracking'],
       intake:      ['Intake Forms', 'Client health questionnaires and signed consent waivers'],
       reengage:    ['Re-engagement', 'Clients who haven\'t visited in 60+ days — time to reach out'],
-      settings:    ['Settings', 'Business details, services, therapists and automation']
+      settings:    ['Settings', 'Business details, services, therapists and automation'],
+      users:       ['User Management', 'Create and manage system accounts for Loveit Sanctuary']
     };
     const [title, sub] = titles[page] || ['Loveit Sanctuary',''];
     document.getElementById('topbarTitle').textContent = title;
@@ -2397,10 +2398,13 @@ const App = {
     const sf = document.getElementById('bookingStatusFilter')?.value||'';
     const tf = document.getElementById('bookingTherapistFilter')?.value||'';
 
-    // populate therapist filter
+    // populate therapist filter (rebuild each render so it stays in sync with THERAPISTS)
     const thEl = document.getElementById('bookingTherapistFilter');
-    if(thEl && thEl.options.length===1){
+    if(thEl) {
+      const cur = thEl.value;
+      thEl.innerHTML = '<option value="">All Therapists</option>';
       THERAPISTS.forEach(t=>{ const o=document.createElement('option'); o.value=t.name; o.textContent=t.name; thEl.appendChild(o); });
+      thEl.value = cur;
     }
 
     let bks = [...this.bookings].sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
@@ -2617,7 +2621,7 @@ function toast(msg, type='') {
 /* ── SEED MODAL SELECTS ─────────────────────────────── */
 App.seedModals = function() {
   // Populate client dropdowns
-  ['bk_client','cl_ref','mem_client','inv_client','int_client'].forEach(id=>{
+  ['bk_client','mem_client','inv_client','int_client'].forEach(id=>{
     const el = document.getElementById(id); if(!el) return;
     el.innerHTML = '<option value="">Select client…</option>';
     App.clients.forEach(c=>{ const o=document.createElement('option'); o.value=c.id; o.textContent=c.first+' '+c.last; el.appendChild(o); });
@@ -2633,6 +2637,7 @@ App.seedModals = function() {
 function renderBookings(){ App.renderBookings(); }
 function renderClients(){ App.renderClients(); }
 function renderInvoices(){ App.renderInvoices(); }
+function bookClientFromProfile(){ App.bookClientFromProfile(); }
 
 function saveBooking() {
   const cid = document.getElementById('bk_client').value;
@@ -2729,9 +2734,10 @@ function saveMembership(){
   const cid=document.getElementById('mem_client').value;
   const tier=document.getElementById('mem_tier').value.split('—')[0].trim();
   const start=document.getElementById('mem_start').value;
+  const billingStatus=document.getElementById('mem_billing').value||'Active';
   if(!cid||!start){toast('Please select a client and start date.','error');return;}
   const renewal=new Date(start); renewal.setMonth(renewal.getMonth()+1);
-  App.memberships.push({id:App.uid('m'),clientId:cid,tier,billing:tier==='Serenity'?'R 499/mo':tier==='Harmony'?'R 899/mo':'R 1 399/mo',start,renewal:renewal.toISOString().split('T')[0],status:'Active'});
+  App.memberships.push({id:App.uid('m'),clientId:cid,tier,billing:tier==='Serenity'?'R 499/mo':tier==='Harmony'?'R 899/mo':'R 1 399/mo',start,renewal:renewal.toISOString().split('T')[0],status:billingStatus});
   App.save(); closeModal('membershipModal');
   toast(App.clientName(cid)+' enrolled in '+tier+' membership.','success');
   App.renderMemberships();
@@ -3477,7 +3483,8 @@ const Auth = {
     document.getElementById('um_role').value=u.role;
     document.getElementById('um_status').value=u.status;
     document.getElementById('um_pwd').value='';
-    document.getElementById('um_pwdSection').querySelector('label .form-label span').textContent='(leave blank to keep current)';
+    const pwdHint = document.getElementById('um_pwdSection').querySelector('.form-label span');
+    if(pwdHint) pwdHint.textContent='(leave blank to keep current)';
     openModal('userModal');
   },
 
