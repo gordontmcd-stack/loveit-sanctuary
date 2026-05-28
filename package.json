@@ -1,0 +1,17 @@
+{
+  "name": "loveit-sanctuary",
+  "version": "1.0.0",
+  "description": "Wellness management system for Loveit Sanctuary, Cape Town",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "private": true
+}

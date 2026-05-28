@@ -1,0 +1,3293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Loveit Sanctuary · Wellness Management</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='32' fill='%233D4A35'/%3E%3Ctext x='32' y='46' font-size='34' text-anchor='middle' fill='%23F6F0E6' font-family='Georgia,serif' font-style='italic'%3EL%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+/* ── VARIABLES ─────────────────────────────────────────── */
+:root {
+  --sage:        #3D4A35;
+  --sage-mid:    #4F6141;
+  --sage-dark:   #2A3324;
+  --sage-pale:   #EEF1EB;
+  --cream:       #F6F0E6;
+  --cream-dark:  #EDE5D5;
+  --rose:        #C4967E;
+  --rose-pale:   #F5EEEA;
+  --gold:        #B99469;
+  --dark:        #1C1A18;
+  --mid:         #6B6355;
+  --light:       #9B9186;
+  --border:      #DDD5C7;
+  --white:       #FFFFFF;
+  --success:     #3D6E4E;
+  --warning:     #B8811A;
+  --error:       #A63E3E;
+  --sidebar-w:   240px;
+  --topbar-h:    60px;
+  --radius:      10px;
+  --radius-sm:   6px;
+  --shadow:      0 1px 4px rgba(28,26,24,.08), 0 4px 16px rgba(28,26,24,.06);
+  --shadow-sm:   0 1px 3px rgba(28,26,24,.08);
+  --transition:  all .18s ease;
+}
+
+/* ── RESET ─────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 15px; -webkit-text-size-adjust: 100%; }
+body {
+  font-family: 'Jost', -apple-system, sans-serif;
+  background: var(--cream);
+  color: var(--dark);
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+input, select, textarea { font-family: inherit; }
+img { max-width: 100%; display: block; }
+ul { list-style: none; }
+svg { display: block; flex-shrink: 0; }
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ── LAYOUT ────────────────────────────────────────────── */
+.app-shell { display: flex; min-height: 100vh; }
+
+/* SIDEBAR */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--sage-dark);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 100;
+  transition: var(--transition);
+}
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 22px 18px 20px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.logo-circle {
+  width: 36px; height: 36px;
+  background: var(--rose);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.logo-circle span {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 20px;
+  color: var(--white);
+  line-height: 1;
+  margin-top: 1px;
+}
+.logo-text { display: flex; flex-direction: column; line-height: 1.2; }
+.logo-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--white);
+  letter-spacing: .3px;
+}
+.logo-sub { font-size: 10px; color: rgba(255,255,255,.45); font-weight: 300; letter-spacing: .5px; text-transform: uppercase; }
+
+.sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+.nav-section-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.3);
+  padding: 14px 18px 6px;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  color: rgba(255,255,255,.6);
+  font-size: 13.5px;
+  font-weight: 400;
+  cursor: pointer;
+  transition: var(--transition);
+  border-left: 3px solid transparent;
+  position: relative;
+  user-select: none;
+}
+.nav-item:hover { background: rgba(255,255,255,.06); color: rgba(255,255,255,.9); }
+.nav-item.active {
+  background: rgba(196,150,126,.15);
+  border-left-color: var(--rose);
+  color: var(--white);
+}
+.nav-item svg { opacity: .75; }
+.nav-item.active svg { opacity: 1; }
+.nav-badge {
+  margin-left: auto;
+  background: var(--rose);
+  color: var(--white);
+  font-size: 10px;
+  font-weight: 600;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 99px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 5px;
+}
+
+.sidebar-footer {
+  padding: 14px 18px;
+  border-top: 1px solid rgba(255,255,255,.08);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sidebar-footer-avatar {
+  width: 30px; height: 30px;
+  background: var(--sage-mid);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--white);
+  flex-shrink: 0;
+}
+.sidebar-footer-info { flex: 1; min-width: 0; }
+.sidebar-footer-name { font-size: 12px; color: rgba(255,255,255,.85); font-weight: 500; }
+.sidebar-footer-role { font-size: 10px; color: rgba(255,255,255,.35); }
+
+/* MAIN CONTENT */
+.main-content {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* TOPBAR */
+.topbar {
+  height: var(--topbar-h);
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 28px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  gap: 16px;
+}
+.topbar-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--dark);
+  flex: 1;
+}
+.topbar-subtitle { font-size: 12px; color: var(--light); font-family: 'Jost', sans-serif; font-weight: 300; }
+.topbar-actions { display: flex; align-items: center; gap: 10px; }
+
+/* PAGE CONTENT */
+.page-content { padding: 28px; flex: 1; }
+.page { display: none; }
+.page.active { display: block; }
+
+/* ── TYPOGRAPHY ─────────────────────────────────────────── */
+h1 { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 500; color: var(--dark); line-height: 1.2; }
+h2 { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 500; color: var(--dark); }
+h3 { font-family: 'Cormorant Garamond', serif; font-size: 17px; font-weight: 500; color: var(--dark); }
+.section-title { font-family: 'Cormorant Garamond', serif; font-size: 19px; font-weight: 500; margin-bottom: 16px; color: var(--dark); }
+
+/* ── BUTTONS ────────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: var(--transition);
+  border: none; white-space: nowrap; line-height: 1;
+}
+.btn svg { flex-shrink: 0; }
+.btn-primary { background: var(--sage); color: var(--white); }
+.btn-primary:hover { background: var(--sage-mid); }
+.btn-rose { background: var(--rose); color: var(--white); }
+.btn-rose:hover { background: #b5856c; }
+.btn-gold { background: var(--gold); color: var(--white); }
+.btn-gold:hover { background: #a5825a; }
+.btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--mid); }
+.btn-ghost:hover { background: var(--cream-dark); border-color: var(--sage); color: var(--dark); }
+.btn-danger { background: #fee2e2; color: var(--error); border: 1px solid #fecaca; }
+.btn-danger:hover { background: #fecaca; }
+.btn-wa { background: #25D366; color: var(--white); }
+.btn-wa:hover { background: #1ebe5a; }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn-xs { padding: 4px 9px; font-size: 11px; border-radius: 5px; }
+.btn-icon { padding: 7px; border-radius: var(--radius-sm); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+
+/* ── CARDS ──────────────────────────────────────────────── */
+.card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+.card-header {
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.card-body { padding: 20px; }
+.card-cream { background: var(--cream); border-color: var(--border); }
+
+/* STAT CARDS */
+.stat-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--sage);
+}
+.stat-card.rose::before { background: var(--rose); }
+.stat-card.gold::before { background: var(--gold); }
+.stat-card.mid::before { background: var(--mid); }
+.stat-label { font-size: 11px; font-weight: 500; color: var(--light); text-transform: uppercase; letter-spacing: .7px; margin-bottom: 8px; }
+.stat-value { font-family: 'Cormorant Garamond', serif; font-size: 34px; font-weight: 500; color: var(--dark); line-height: 1; }
+.stat-sub { font-size: 12px; color: var(--light); margin-top: 6px; }
+.stat-icon { position: absolute; top: 18px; right: 18px; opacity: .12; }
+.stat-icon svg { width: 36px; height: 36px; stroke: var(--sage); }
+
+/* GRIDS */
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+
+/* ── FORM ELEMENTS ──────────────────────────────────────── */
+.form-group { margin-bottom: 16px; }
+.form-label {
+  display: block;
+  font-size: 11px; font-weight: 600;
+  color: var(--mid); text-transform: uppercase;
+  letter-spacing: .5px; margin-bottom: 5px;
+}
+.form-input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  font-size: 13.5px; color: var(--dark);
+  background: var(--white);
+  outline: none;
+  transition: var(--transition);
+}
+.form-input:focus { border-color: var(--sage); box-shadow: 0 0 0 3px rgba(61,74,53,.1); }
+.form-input::placeholder { color: var(--light); }
+textarea.form-input { resize: vertical; min-height: 80px; }
+select.form-input { cursor: pointer; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-hint { font-size: 11px; color: var(--light); margin-top: 4px; }
+
+/* ── BADGES ─────────────────────────────────────────────── */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 9px;
+  border-radius: 99px;
+  font-size: 11px; font-weight: 600;
+  white-space: nowrap;
+}
+.badge-confirmed  { background: #e8f0e5; color: var(--success); }
+.badge-pending    { background: #fef6e4; color: var(--warning); }
+.badge-completed  { background: #e8f0e5; color: #2A5E3C; }
+.badge-cancelled  { background: #fde8e8; color: var(--error); }
+.badge-noshow     { background: #f0ede8; color: var(--mid); }
+.badge-paid       { background: #e8f0e5; color: var(--success); }
+.badge-unpaid     { background: #fef6e4; color: var(--warning); }
+.badge-overdue    { background: #fde8e8; color: var(--error); }
+.badge-vip        { background: #f9f3e8; color: var(--gold); border: 1px solid #e8d5b0; }
+.badge-new        { background: #e8f0f5; color: #2A5E7A; }
+.badge-lapsed     { background: #f5eeea; color: var(--rose); }
+.badge-active     { background: #e8f0e5; color: var(--success); }
+.badge-signed     { background: #e8f0e5; color: var(--success); }
+.badge-unsigned   { background: #fef6e4; color: var(--warning); }
+.badge-sage       { background: var(--sage-pale); color: var(--sage); }
+.badge-rose       { background: var(--rose-pale); color: var(--rose); }
+
+/* ── TABLES ─────────────────────────────────────────────── */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+thead th {
+  text-align: left;
+  font-size: 10.5px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .7px;
+  color: var(--light);
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--cream);
+}
+tbody td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr { transition: var(--transition); }
+tbody tr:hover { background: var(--cream); }
+.td-name { font-weight: 500; color: var(--dark); }
+.td-sub  { font-size: 11.5px; color: var(--light); margin-top: 1px; }
+
+/* ── TOOLBAR ────────────────────────────────────────────── */
+.toolbar {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 20px; flex-wrap: wrap;
+}
+.search-box {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 7px 12px;
+  flex: 1; min-width: 180px; max-width: 300px;
+}
+.search-box input { border: none; outline: none; font-size: 13px; color: var(--dark); background: transparent; width: 100%; }
+.search-box input::placeholder { color: var(--light); }
+.search-box svg { color: var(--light); flex-shrink: 0; }
+
+/* ── MODALS ─────────────────────────────────────────────── */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(28,26,24,.5);
+  z-index: 200;
+  align-items: center; justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--white);
+  border-radius: var(--radius);
+  width: 100%; max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(28,26,24,.25);
+  animation: modalIn .2s ease;
+}
+.modal-lg { max-width: 700px; }
+.modal-header {
+  padding: 22px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; background: var(--white); z-index: 1;
+}
+.modal-header h3 { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 500; }
+.modal-body { padding: 22px 24px; }
+.modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  display: flex; justify-content: flex-end; gap: 10px;
+  position: sticky; bottom: 0; background: var(--white);
+}
+.btn-close-modal { color: var(--light); transition: var(--transition); padding: 4px; border-radius: 4px; }
+.btn-close-modal:hover { color: var(--dark); background: var(--cream); }
+@keyframes modalIn { from { opacity: 0; transform: translateY(12px) scale(.98); } to { opacity: 1; transform: none; } }
+
+/* ── TOASTS ─────────────────────────────────────────────── */
+.toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 999; display: flex; flex-direction: column; gap: 10px; }
+.toast {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--dark);
+  color: var(--white);
+  padding: 12px 18px;
+  border-radius: var(--radius);
+  font-size: 13px; font-weight: 400;
+  box-shadow: 0 8px 24px rgba(28,26,24,.3);
+  animation: toastIn .25s ease;
+  max-width: 340px;
+}
+.toast.success { background: var(--success); }
+.toast.error   { background: var(--error); }
+.toast.warning { background: var(--warning); }
+@keyframes toastIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: none; } }
+
+/* ── EMPTY STATE ─────────────────────────────────────────── */
+.empty-state {
+  text-align: center; padding: 60px 20px;
+  color: var(--light);
+}
+.empty-state svg { margin: 0 auto 16px; opacity: .35; }
+.empty-state h3 { font-size: 16px; color: var(--mid); margin-bottom: 6px; }
+.empty-state p { font-size: 13px; }
+
+/* ── AVATAR ─────────────────────────────────────────────── */
+.avatar {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 600;
+  color: var(--white); flex-shrink: 0;
+  background: var(--sage);
+}
+
+/* ── CLIENT CARDS ───────────────────────────────────────── */
+.client-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.client-card:hover { border-color: var(--sage); box-shadow: var(--shadow); transform: translateY(-1px); }
+.client-card-top { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.client-card-name { font-weight: 500; color: var(--dark); font-size: 14px; }
+.client-card-contact { font-size: 12px; color: var(--light); }
+.client-card-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 10px; border-top: 1px solid var(--border); margin-top: 10px; font-size: 12px; color: var(--light); }
+
+/* ── MEMBERSHIP CARDS ───────────────────────────────────── */
+.membership-tier-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.membership-tier-card.featured { border-color: var(--gold); }
+.membership-tier-card .tier-stripe {
+  position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  background: var(--sage);
+}
+.membership-tier-card.featured .tier-stripe { background: var(--gold); }
+.tier-name { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 600; color: var(--dark); margin: 10px 0 4px; }
+.tier-price { font-family: 'Cormorant Garamond', serif; font-size: 30px; font-weight: 500; color: var(--sage); }
+.tier-price span { font-size: 14px; color: var(--light); font-family: 'Jost'; font-weight: 400; }
+.tier-features { text-align: left; margin: 16px 0; }
+.tier-feature { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--mid); padding: 4px 0; }
+.tier-feature svg { color: var(--sage); flex-shrink: 0; }
+
+/* ── INVOICE ─────────────────────────────────────────────── */
+.invoice-row { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--border); transition: var(--transition); }
+.invoice-row:last-child { border-bottom: none; }
+.invoice-row:hover { background: var(--cream); }
+.invoice-num { font-family: 'Cormorant Garamond', serif; font-size: 15px; font-weight: 500; color: var(--dark); }
+.invoice-client { font-size: 12px; color: var(--light); }
+.invoice-amount { font-family: 'Cormorant Garamond', serif; font-size: 17px; font-weight: 500; color: var(--dark); margin-left: auto; }
+
+/* ── INTAKE FORM ─────────────────────────────────────────── */
+.intake-client-row { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--border); transition: var(--transition); }
+.intake-client-row:hover { background: var(--cream); }
+.intake-client-row:last-child { border-bottom: none; }
+.sig-canvas-wrap { border: 2px dashed var(--border); border-radius: var(--radius-sm); background: #fafafa; position: relative; margin-bottom: 8px; }
+canvas#sigCanvas { display: block; width: 100%; touch-action: none; }
+.sig-controls { display: flex; gap: 8px; }
+
+/* ── RE-ENGAGEMENT ───────────────────────────────────────── */
+.reengage-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  display: flex; align-items: flex-start; gap: 14px;
+  transition: var(--transition);
+}
+.reengage-card:hover { border-color: var(--rose); box-shadow: var(--shadow-sm); }
+.reengage-days {
+  background: var(--rose-pale);
+  color: var(--rose);
+  font-size: 12px; font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 99px;
+  white-space: nowrap;
+}
+
+/* ── BOOKING CALENDAR ────────────────────────────────────── */
+.booking-timeline { display: flex; flex-direction: column; gap: 10px; }
+.booking-slot {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  transition: var(--transition);
+  cursor: pointer;
+}
+.booking-slot:hover { border-color: var(--sage); box-shadow: var(--shadow-sm); }
+.booking-time { font-family: 'Cormorant Garamond', serif; font-size: 17px; font-weight: 500; min-width: 52px; color: var(--dark); }
+.booking-info { flex: 1; }
+.booking-client-name { font-size: 14px; font-weight: 500; color: var(--dark); }
+.booking-treatment { font-size: 12px; color: var(--light); }
+.booking-therapist { font-size: 12px; color: var(--mid); }
+
+/* ── SETTINGS ────────────────────────────────────────────── */
+.settings-section { margin-bottom: 32px; }
+.settings-section-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px; font-weight: 500;
+  color: var(--dark); margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.settings-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--cream-dark); }
+.settings-row:last-child { border-bottom: none; }
+.settings-label { font-size: 13.5px; color: var(--dark); font-weight: 500; }
+.settings-value { font-size: 13px; color: var(--mid); }
+.toggle-switch { position: relative; width: 42px; height: 24px; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; inset: 0;
+  background: var(--border);
+  border-radius: 99px; cursor: pointer;
+  transition: var(--transition);
+}
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 18px; height: 18px;
+  left: 3px; top: 3px;
+  background: var(--white);
+  border-radius: 50%;
+  transition: var(--transition);
+}
+.toggle-switch input:checked + .toggle-slider { background: var(--sage); }
+.toggle-switch input:checked + .toggle-slider::before { transform: translateX(18px); }
+
+/* ── MOBILE TOPBAR ───────────────────────────────────────── */
+.mobile-topbar {
+  display: none;
+  height: 56px;
+  background: var(--sage-dark);
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  position: sticky; top: 0; z-index: 100;
+}
+.mobile-logo { display: flex; align-items: center; gap: 8px; }
+.mobile-logo-circle { width: 30px; height: 30px; background: var(--rose); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.mobile-logo-circle span { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 16px; color: var(--white); }
+.mobile-logo-name { font-family: 'Cormorant Garamond', serif; font-size: 15px; color: var(--white); font-weight: 500; }
+
+/* BOTTOM NAV */
+.bottom-nav {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--white);
+  border-top: 1px solid var(--border);
+  z-index: 100;
+  height: 60px;
+}
+.bottom-nav-inner { display: flex; height: 100%; }
+.bottom-nav-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 3px;
+  font-size: 10px; color: var(--light);
+  cursor: pointer; transition: var(--transition);
+  position: relative;
+}
+.bottom-nav-item.active { color: var(--sage); }
+.bottom-nav-item svg { width: 20px; height: 20px; }
+.bottom-nav-badge {
+  position: absolute; top: 8px; right: calc(50% - 16px);
+  background: var(--rose); color: var(--white);
+  font-size: 9px; font-weight: 700;
+  min-width: 14px; height: 14px;
+  border-radius: 99px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 3px;
+}
+
+/* ── DASHBOARD CHART ─────────────────────────────────────── */
+.chart-wrap { position: relative; height: 220px; }
+
+/* ── PROGRESS BAR ────────────────────────────────────────── */
+.progress-bar { height: 6px; background: var(--cream-dark); border-radius: 99px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 99px; background: var(--sage); transition: width .4s ease; }
+
+/* ── DETAIL PANEL ────────────────────────────────────────── */
+.detail-row { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--cream-dark); }
+.detail-row:last-child { border-bottom: none; }
+.detail-label { font-size: 11px; font-weight: 600; color: var(--light); text-transform: uppercase; letter-spacing: .5px; min-width: 110px; flex-shrink: 0; padding-top: 1px; }
+.detail-value { font-size: 13.5px; color: var(--dark); flex: 1; }
+
+/* ── TABS ────────────────────────────────────────────────── */
+.tabs { display: flex; gap: 2px; background: var(--cream-dark); border-radius: var(--radius-sm); padding: 3px; width: fit-content; margin-bottom: 20px; }
+.tab { padding: 7px 16px; border-radius: 5px; font-size: 13px; cursor: pointer; transition: var(--transition); color: var(--mid); }
+.tab.active { background: var(--white); color: var(--dark); font-weight: 500; box-shadow: var(--shadow-sm); }
+
+/* ── RESPONSIVE ──────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .grid-3 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 700px) {
+  .sidebar { display: none; }
+  .main-content { margin-left: 0; padding-bottom: 68px; }
+  .topbar { display: none; }
+  .mobile-topbar { display: flex; }
+  .bottom-nav { display: block; }
+  .page-content { padding: 16px; }
+  .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+  .form-row { grid-template-columns: 1fr; }
+  .modal { margin: 0; border-radius: var(--radius) var(--radius) 0 0; max-height: 85vh; }
+  .modal-overlay { align-items: flex-end; padding: 0; }
+}
+
+/* ── MISC ────────────────────────────────────────────────── */
+.divider { height: 1px; background: var(--border); margin: 20px 0; }
+.text-light { color: var(--light); }
+.text-mid   { color: var(--mid); }
+.text-sage  { color: var(--sage); }
+.text-rose  { color: var(--rose); }
+.text-gold  { color: var(--gold); }
+.text-sm    { font-size: 12px; }
+.text-xs    { font-size: 11px; }
+.fw-500     { font-weight: 500; }
+.serif      { font-family: 'Cormorant Garamond', serif; }
+.mt-4       { margin-top: 4px; }
+.mt-8       { margin-top: 8px; }
+.mt-16      { margin-top: 16px; }
+.mt-24      { margin-top: 24px; }
+.mb-16      { margin-bottom: 16px; }
+.mb-24      { margin-bottom: 24px; }
+.flex       { display: flex; }
+.flex-col   { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-8      { gap: 8px; }
+.gap-12     { gap: 12px; }
+.gap-16     { gap: 16px; }
+.flex-1     { flex: 1; }
+.w-full     { width: 100%; }
+.hidden     { display: none !important; }
+
+/* ── AUTH / LOGIN ─────────────────────────────────────── */
+.auth-screen {
+  display: none;
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--sage-dark);
+  align-items: center; justify-content: center;
+  padding: 20px;
+}
+.auth-screen.visible { display: flex; }
+.auth-card {
+  background: var(--white);
+  border-radius: 14px;
+  width: 100%; max-width: 400px;
+  box-shadow: 0 24px 80px rgba(0,0,0,.4);
+  overflow: hidden;
+}
+.auth-header {
+  background: var(--sage-dark);
+  padding: 32px 32px 28px;
+  text-align: center;
+}
+.auth-logo-circle {
+  width: 54px; height: 54px;
+  background: var(--rose);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 14px;
+}
+.auth-logo-circle span {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic; font-size: 28px;
+  color: var(--white); line-height: 1;
+}
+.auth-brand { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 500; color: var(--white); }
+.auth-tagline { font-size: 11px; color: rgba(255,255,255,.45); letter-spacing: .5px; margin-top: 4px; }
+.auth-body { padding: 28px 32px 32px; }
+.auth-body .form-group { margin-bottom: 18px; }
+.auth-error {
+  background: #fee2e2; color: var(--error);
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-sm);
+  padding: 10px 14px; font-size: 13px;
+  display: none; margin-bottom: 16px;
+  align-items: center; gap: 8px;
+}
+.auth-error.show { display: flex; }
+.auth-input-wrap { position: relative; }
+.auth-input-wrap svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--light); pointer-events: none; }
+.auth-input-wrap .form-input { padding-left: 36px; }
+.auth-input-wrap.right svg { left: auto; right: 11px; cursor: pointer; pointer-events: all; }
+.role-badge-owner { background: #fef3e2; color: #B99469; border: 1px solid #f5d9a8; }
+.role-badge-admin  { background: #ede9fe; color: #7c3aed; border: 1px solid #c4b5fd; }
+.role-badge-therapist { background: #e8f0e5; color: var(--sage); border: 1px solid #b5ccad; }
+.must-change-banner {
+  background: #fef3e2; border: 1px solid #f5d9a8;
+  border-radius: var(--radius-sm); padding: 10px 14px;
+  font-size: 12.5px; color: #92400e; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+
+/* ── USER MANAGEMENT ──────────────────────────────────── */
+.user-card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 18px 20px;
+  display: flex; align-items: center; gap: 14px;
+  transition: var(--transition);
+}
+.user-card:hover { box-shadow: var(--shadow); }
+.user-avatar-lg {
+  width: 44px; height: 44px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 600; color: var(--white); flex-shrink: 0;
+}
+.user-role-stripe {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px; border-radius: 3px 0 0 3px;
+}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN SCREEN ══ -->
+<div class="auth-screen" id="authScreen">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="auth-logo-circle"><span>L</span></div>
+      <div class="auth-brand">Loveit Sanctuary</div>
+      <div class="auth-tagline">Sanctuary for the skin, body &amp; soul</div>
+    </div>
+    <div class="auth-body">
+      <div class="auth-error" id="loginError">
+        <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+        <span id="loginErrorMsg">Incorrect email or password.</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <div class="auth-input-wrap">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          <input type="email" class="form-input" id="loginEmail" placeholder="your@email.com" onkeydown="if(event.key==='Enter')Auth.login()">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="auth-input-wrap right">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="left:11px;right:auto;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          <input type="password" class="form-input" id="loginPassword" placeholder="Enter your password" onkeydown="if(event.key==='Enter')Auth.login()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" onclick="Auth.togglePwd('loginPassword',this)"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+        </div>
+      </div>
+      <button class="btn btn-primary w-full" style="justify-content:center;padding:11px;" onclick="Auth.login()">
+        <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+        Sign In to Loveit Sanctuary
+      </button>
+      <div style="text-align:center;margin-top:16px;font-size:11px;color:var(--light);">
+        Secure system by Nexa Global Solutions
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CHANGE PASSWORD SCREEN ══ -->
+<div class="auth-screen" id="changePwdScreen">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="auth-logo-circle"><span>L</span></div>
+      <div class="auth-brand">Update Your Password</div>
+      <div class="auth-tagline">Required before your first sign-in</div>
+    </div>
+    <div class="auth-body">
+      <div class="must-change-banner">
+        <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+        For your security, please set a new password before continuing.
+      </div>
+      <div class="auth-error" id="changePwdError">
+        <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01"/></svg>
+        <span id="changePwdErrorMsg"></span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">New Password <span style="color:var(--light);font-size:10px;">(min 6 characters)</span></label>
+        <div class="auth-input-wrap right">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="left:11px;right:auto;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          <input type="password" class="form-input" id="newPwd1" placeholder="New password">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" onclick="Auth.togglePwd('newPwd1',this)"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confirm New Password</label>
+        <div class="auth-input-wrap right">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="left:11px;right:auto;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          <input type="password" class="form-input" id="newPwd2" placeholder="Confirm password" onkeydown="if(event.key==='Enter')Auth.changePassword()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" onclick="Auth.togglePwd('newPwd2',this)"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+        </div>
+      </div>
+      <button class="btn btn-primary w-full" style="justify-content:center;padding:11px;" onclick="Auth.changePassword()">
+        <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+        Set New Password &amp; Continue
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MOBILE TOPBAR ── -->
+<div class="mobile-topbar">
+  <div class="mobile-logo">
+    <div class="mobile-logo-circle"><span>L</span></div>
+    <span class="mobile-logo-name">Loveit Sanctuary</span>
+  </div>
+  <button class="btn btn-ghost btn-sm" style="color:rgba(255,255,255,.7);border-color:rgba(255,255,255,.2);font-size:12px;" onclick="openModal('bookingModal')">
+    <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+    New Booking
+  </button>
+</div>
+
+<div class="app-shell">
+
+<!-- ── SIDEBAR ── -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-circle"><span>L</span></div>
+    <div class="logo-text">
+      <span class="logo-name">Loveit Sanctuary</span>
+      <span class="logo-sub">Wellness · Cape Town</span>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Main</div>
+
+    <div class="nav-item active" data-page="dashboard">
+      <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1" stroke-width="2"/></svg>
+      Dashboard
+    </div>
+
+    <div class="nav-item" data-page="bookings">
+      <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 2v4M8 2v4M3 10h18"/></svg>
+      Bookings
+    </div>
+
+    <div class="nav-item" data-page="clients">
+      <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      Clients
+    </div>
+
+    <div class="nav-item" data-page="memberships">
+      <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      Memberships
+    </div>
+
+    <div class="nav-item" data-page="invoices">
+      <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+      Invoices
+    </div>
+
+    <div class="nav-section-label">Client Care</div>
+
+    <div class="nav-item" data-page="intake">
+      <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+      Intake Forms
+    </div>
+
+    <div class="nav-item" data-page="reengage">
+      <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+      Re-engage
+      <span class="nav-badge" id="reengageBadge">2</span>
+    </div>
+
+    <div class="nav-section-label">Admin</div>
+
+    <div class="nav-item" data-page="settings">
+      <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3" stroke-width="2"/></svg>
+      Settings
+    </div>
+
+    <!-- Owner only -->
+    <div class="nav-item owner-only" data-page="users" style="display:none;">
+      <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+      User Management
+    </div>
+  </nav>
+
+  <div class="sidebar-footer" style="flex-direction:column;gap:8px;align-items:stretch;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="sidebar-footer-avatar" id="sidebarAvatar">C</div>
+      <div class="sidebar-footer-info" style="flex:1;min-width:0;">
+        <div class="sidebar-footer-name" id="sidebarName">Candice</div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:2px;">
+          <span id="sidebarRoleBadge" style="font-size:9px;font-weight:700;padding:1px 7px;border-radius:99px;text-transform:uppercase;letter-spacing:.4px;background:#fef3e2;color:#B99469;">Owner</span>
+        </div>
+      </div>
+      <button onclick="Auth.logout()" title="Sign out" style="color:rgba(255,255,255,.4);padding:4px;border-radius:4px;transition:color .15s;" onmouseover="this.style.color='rgba(255,255,255,.85)'" onmouseout="this.style.color='rgba(255,255,255,.4)'">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+      </button>
+    </div>
+  </div>
+</aside>
+
+<!-- ── MAIN ── -->
+<main class="main-content">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div>
+      <div class="topbar-title" id="topbarTitle">Dashboard</div>
+      <div class="topbar-subtitle" id="topbarSub">Good morning, Candice — here's your sanctuary overview</div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-ghost btn-sm" onclick="openModal('bookingModal')">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+        New Booking
+      </button>
+      <button class="btn btn-primary btn-sm" onclick="openModal('clientModal')">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+        Add Client
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ PAGE: DASHBOARD ══ -->
+  <div class="page active page-content" id="page-dashboard">
+    <div class="grid-4 mb-24" id="dashStats"></div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">
+          <h3 style="font-size:16px;">Revenue — Last 30 Days</h3>
+          <span class="badge badge-sage" id="dashRevBadge">Loading…</span>
+        </div>
+        <div class="card-body">
+          <div class="chart-wrap"><canvas id="revenueChart"></canvas></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3 style="font-size:16px;">Today's Appointments</h3>
+          <span class="text-sm text-light" id="todayDate"></span>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <div id="todayBookings"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2 mt-24">
+      <div class="card">
+        <div class="card-header">
+          <h3 style="font-size:16px;">Top Treatments</h3>
+        </div>
+        <div class="card-body" id="topTreatments"></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <h3 style="font-size:16px;">Membership Overview</h3>
+        </div>
+        <div class="card-body" id="membershipOverview"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE: BOOKINGS ══ -->
+  <div class="page page-content" id="page-bookings">
+    <div class="toolbar">
+      <div class="search-box">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" stroke-width="2"/><path stroke-linecap="round" stroke-width="2" d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" placeholder="Search bookings…" id="bookingSearch" oninput="renderBookings()">
+      </div>
+      <select class="form-input" style="width:auto;padding:7px 10px;font-size:13px;" id="bookingStatusFilter" onchange="renderBookings()">
+        <option value="">All Statuses</option>
+        <option value="Confirmed">Confirmed</option>
+        <option value="Pending">Pending</option>
+        <option value="Completed">Completed</option>
+        <option value="Cancelled">Cancelled</option>
+        <option value="No-show">No-show</option>
+      </select>
+      <select class="form-input" style="width:auto;padding:7px 10px;font-size:13px;" id="bookingTherapistFilter" onchange="renderBookings()">
+        <option value="">All Therapists</option>
+      </select>
+      <button class="btn btn-primary btn-sm" style="margin-left:auto;" onclick="openModal('bookingModal')">
+        <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+        New Booking
+      </button>
+    </div>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date & Time</th>
+              <th>Client</th>
+              <th>Treatment</th>
+              <th>Therapist</th>
+              <th>Duration</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="bookingsTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE: CLIENTS ══ -->
+  <div class="page page-content" id="page-clients">
+    <div class="toolbar">
+      <div class="search-box">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" stroke-width="2"/><path stroke-linecap="round" stroke-width="2" d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" placeholder="Search clients…" id="clientSearch" oninput="renderClients()">
+      </div>
+      <select class="form-input" style="width:auto;padding:7px 10px;font-size:13px;" id="clientTagFilter" onchange="renderClients()">
+        <option value="">All Clients</option>
+        <option value="VIP">VIP</option>
+        <option value="New">New</option>
+        <option value="Lapsed">Lapsed</option>
+      </select>
+      <button class="btn btn-primary btn-sm" style="margin-left:auto;" onclick="openModal('clientModal')">
+        <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+        Add Client
+      </button>
+    </div>
+    <div id="clientsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;"></div>
+  </div>
+
+  <!-- ══ PAGE: MEMBERSHIPS ══ -->
+  <div class="page page-content" id="page-memberships">
+    <div class="grid-3 mb-24" id="membershipTiers"></div>
+    <div class="card">
+      <div class="card-header">
+        <h3 style="font-size:16px;">Active Members</h3>
+        <button class="btn btn-primary btn-sm" onclick="openModal('membershipModal')">
+          <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+          Add Member
+        </button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Client</th>
+              <th>Tier</th>
+              <th>Billing</th>
+              <th>Next Renewal</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="membershipsTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE: INVOICES ══ -->
+  <div class="page page-content" id="page-invoices">
+    <div class="toolbar">
+      <div class="search-box">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" stroke-width="2"/><path stroke-linecap="round" stroke-width="2" d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" placeholder="Search invoices…" id="invoiceSearch" oninput="renderInvoices()">
+      </div>
+      <select class="form-input" style="width:auto;padding:7px 10px;font-size:13px;" id="invoiceStatusFilter" onchange="renderInvoices()">
+        <option value="">All Statuses</option>
+        <option value="Paid">Paid</option>
+        <option value="Unpaid">Unpaid</option>
+        <option value="Overdue">Overdue</option>
+      </select>
+      <button class="btn btn-primary btn-sm" style="margin-left:auto;" onclick="openModal('invoiceModal')">
+        <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+        Create Invoice
+      </button>
+    </div>
+    <div class="grid-3 mb-20" id="invoiceStats"></div>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Invoice #</th>
+              <th>Client</th>
+              <th>Items</th>
+              <th>Amount</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="invoicesTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE: INTAKE FORMS ══ -->
+  <div class="page page-content" id="page-intake">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <p class="text-mid text-sm">Every new client at Loveit Sanctuary completes a confidential health questionnaire and consent waiver before their first treatment.</p>
+      <button class="btn btn-primary btn-sm" onclick="openModal('intakeModal')">
+        <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+        Send Form to Client
+      </button>
+    </div>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Client</th>
+              <th>Form Type</th>
+              <th>Sent</th>
+              <th>Status</th>
+              <th>Signed</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="intakeTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE: RE-ENGAGE ══ -->
+  <div class="page page-content" id="page-reengage">
+    <div class="card mb-24" style="background:var(--rose-pale);border-color:var(--rose);">
+      <div class="card-body" style="display:flex;align-items:center;gap:16px;">
+        <svg width="28" height="28" fill="none" stroke="var(--rose)" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <div>
+          <div style="font-weight:600;color:var(--dark);font-size:14px;" id="reengageHeadline">Clients who haven't visited in 60+ days</div>
+          <div class="text-sm text-mid mt-4">A warm, personal message at the right time brings clients back. All templates are pre-written in Loveit Sanctuary's voice.</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:20px;">
+      <div class="tabs">
+        <div class="tab active" onclick="setReengageTab('overdue',this)">60+ Days</div>
+        <div class="tab" onclick="setReengageTab('all',this)">All Lapsed</div>
+      </div>
+    </div>
+
+    <div id="reengageList" style="display:flex;flex-direction:column;gap:12px;"></div>
+
+    <div class="card mt-24">
+      <div class="card-header"><h3 style="font-size:16px;">Message Templates</h3></div>
+      <div class="card-body" id="messageTemplates"></div>
+    </div>
+  </div>
+
+  <!-- ══ PAGE: USERS (Owner only) ══ -->
+  <div class="page page-content" id="page-users">
+    <div class="toolbar">
+      <div>
+        <h2 style="font-size:17px;margin-bottom:2px;">User Management</h2>
+        <p class="text-sm text-light">Create and manage system accounts for Loveit Sanctuary.</p>
+      </div>
+      <button class="btn btn-primary btn-sm" style="margin-left:auto;" onclick="openModal('userModal')">
+        <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+        Add User
+      </button>
+    </div>
+
+    <div style="background:var(--cream-dark);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;margin-bottom:24px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+        <svg width="15" height="15" fill="none" stroke="var(--mid)" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span class="text-sm fw-500 text-mid">Role Permissions</span>
+      </div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:7px;font-size:12px;"><span style="width:10px;height:10px;border-radius:50%;background:#B99469;display:inline-block;flex-shrink:0;"></span><strong>Owner</strong> — Full access, user management, all records</div>
+        <div style="display:flex;align-items:center;gap:7px;font-size:12px;"><span style="width:10px;height:10px;border-radius:50%;background:#7c3aed;display:inline-block;flex-shrink:0;"></span><strong>Admin</strong> — Most access, cannot manage users or see Owner accounts</div>
+        <div style="display:flex;align-items:center;gap:7px;font-size:12px;"><span style="width:10px;height:10px;border-radius:50%;background:#3D4A35;display:inline-block;flex-shrink:0;"></span><strong>Therapist</strong> — Own bookings &amp; clients only, no billing or admin</div>
+      </div>
+    </div>
+
+    <div id="usersGrid" style="display:flex;flex-direction:column;gap:12px;"></div>
+  </div>
+
+  <!-- ══ PAGE: SETTINGS ══ -->
+  <div class="page page-content" id="page-settings">
+    <div class="grid-2">
+      <div>
+        <div class="settings-section">
+          <div class="settings-section-title">Business Information</div>
+          <div class="settings-row"><span class="settings-label">Business Name</span><span class="settings-value">Loveit Sanctuary</span></div>
+          <div class="settings-row"><span class="settings-label">Owner</span><span class="settings-value">Candice</span></div>
+          <div class="settings-row"><span class="settings-label">Phone / WhatsApp</span><span class="settings-value">068 904 7292</span></div>
+          <div class="settings-row"><span class="settings-label">Address</span><span class="settings-value">2 Yellowwood Crescent, Diep River, 7800</span></div>
+          <div class="settings-row"><span class="settings-label">City</span><span class="settings-value">Cape Town, South Africa</span></div>
+          <div class="settings-row"><span class="settings-label">Instagram</span><span class="settings-value">@loveitsanctuary</span></div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">Working Hours</div>
+          <div id="workingHours"></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="settings-section">
+          <div class="settings-section-title">Services & Pricing</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Treatment</th><th>Duration</th><th>Price</th></tr></thead>
+              <tbody id="servicesTable"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="settings-section mt-16">
+          <div class="settings-section-title">Therapists</div>
+          <div id="therapistsList"></div>
+        </div>
+
+        <div class="settings-section mt-16">
+          <div class="settings-section-title">Automation Settings</div>
+          <div class="settings-row">
+            <div><span class="settings-label">60-Day Re-engagement Alert</span><div class="text-xs text-light mt-4">Notify owner when a client reaches 60 days without a visit</div></div>
+            <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+          </div>
+          <div class="settings-row">
+            <div><span class="settings-label">Booking Confirmation Message</span><div class="text-xs text-light mt-4">Auto-send WhatsApp confirmation after booking</div></div>
+            <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+          </div>
+          <div class="settings-row">
+            <div><span class="settings-label">Intake Form Reminder</span><div class="text-xs text-light mt-4">Remind new clients to complete their intake form</div></div>
+            <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+          </div>
+          <div class="settings-row">
+            <div><span class="settings-label">Membership Renewal Reminder</span><div class="text-xs text-light mt-4">Alert 5 days before membership expires</div></div>
+            <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div><!-- end app-shell -->
+
+<!-- ── BOTTOM NAV (mobile) ── -->
+<nav class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <div class="bottom-nav-item active" data-page="dashboard">
+      <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1" stroke-width="2"/></svg>
+      Dashboard
+    </div>
+    <div class="bottom-nav-item" data-page="bookings">
+      <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 2v4M8 2v4M3 10h18"/></svg>
+      Bookings
+    </div>
+    <div class="bottom-nav-item" data-page="clients">
+      <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      Clients
+    </div>
+    <div class="bottom-nav-item" data-page="reengage" style="position:relative;">
+      <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+      <span class="bottom-nav-badge" id="bottomReengageBadge">2</span>
+      Re-engage
+    </div>
+    <div class="bottom-nav-item" data-page="settings">
+      <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3" stroke-width="2"/></svg>
+      Settings
+    </div>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════
+     MODALS
+══════════════════════════════════════ -->
+
+<!-- NEW BOOKING MODAL -->
+<div class="modal-overlay" id="bookingModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>New Booking</h3>
+      <button class="btn-close-modal" onclick="closeModal('bookingModal')">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Client</label>
+        <select class="form-input" id="bk_client"></select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Date</label>
+          <input type="date" class="form-input" id="bk_date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Time</label>
+          <select class="form-input" id="bk_time">
+            <option>09:00</option><option>09:30</option><option>10:00</option><option>10:30</option>
+            <option>11:00</option><option>11:30</option><option>12:00</option><option>12:30</option>
+            <option>13:00</option><option>13:30</option><option>14:00</option><option>14:30</option>
+            <option>15:00</option><option>15:30</option><option>16:00</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Treatment</label>
+        <select class="form-input" id="bk_treatment"></select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Therapist</label>
+          <select class="form-input" id="bk_therapist"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-input" id="bk_status">
+            <option>Confirmed</option><option>Pending</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notes (optional)</label>
+        <textarea class="form-input" id="bk_notes" placeholder="Any special requests or health considerations…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('bookingModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveBooking()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+        Confirm Booking
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW CLIENT MODAL -->
+<div class="modal-overlay" id="clientModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Add New Client</h3>
+      <button class="btn-close-modal" onclick="closeModal('clientModal')">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">First Name</label>
+          <input type="text" class="form-input" id="cl_first" placeholder="e.g. Thandi">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Last Name</label>
+          <input type="text" class="form-input" id="cl_last" placeholder="e.g. Mokoena">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Phone / WhatsApp</label>
+          <input type="tel" class="form-input" id="cl_phone" placeholder="e.g. 082 555 1234">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" class="form-input" id="cl_email" placeholder="e.g. thandi@email.com">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Date of Birth</label>
+          <input type="date" class="form-input" id="cl_dob">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tag</label>
+          <select class="form-input" id="cl_tag">
+            <option value="New">New Client</option>
+            <option value="VIP">VIP</option>
+            <option value="Lapsed">Lapsed</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notes</label>
+        <textarea class="form-input" id="cl_notes" placeholder="Allergies, preferences, health notes…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('clientModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveClient()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+        Save Client Profile
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- CLIENT DETAIL MODAL -->
+<div class="modal-overlay" id="clientDetailModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3 id="cdm_name">Client Profile</h3>
+      <button class="btn-close-modal" onclick="closeModal('clientDetailModal')">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="clientDetailBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('clientDetailModal')">Close</button>
+      <button class="btn btn-wa" id="cdm_wa" onclick="">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+        WhatsApp Client
+      </button>
+      <button class="btn btn-primary" onclick="bookClientFromProfile()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+        Book Appointment
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD MEMBERSHIP MODAL -->
+<div class="modal-overlay" id="membershipModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Add Member</h3>
+      <button class="btn-close-modal" onclick="closeModal('membershipModal')">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Client</label>
+        <select class="form-input" id="mem_client"></select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Membership Tier</label>
+          <select class="form-input" id="mem_tier">
+            <option value="Serenity">Serenity — R 499/mo</option>
+            <option value="Harmony">Harmony — R 899/mo</option>
+            <option value="Radiance">Radiance — R 1 399/mo</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Start Date</label>
+          <input type="date" class="form-input" id="mem_start">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Billing Status</label>
+        <select class="form-input" id="mem_billing">
+          <option>Active</option><option>Pending</option><option>Lapsed</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('membershipModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveMembership()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+        Activate Membership
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- CREATE INVOICE MODAL -->
+<div class="modal-overlay" id="invoiceModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Create Invoice</h3>
+      <button class="btn-close-modal" onclick="closeModal('invoiceModal')">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Client</label>
+        <select class="form-input" id="inv_client"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Line Items</label>
+        <div id="invoiceLineItems">
+          <div class="form-row" style="margin-bottom:8px;">
+            <input type="text" class="form-input" placeholder="Description (e.g. Deep Tissue Massage 60min)" id="inv_item0">
+            <input type="number" class="form-input" placeholder="R 0.00" id="inv_price0" style="max-width:110px;" oninput="updateInvoiceTotal()">
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-sm mt-8" onclick="addInvoiceLine()">
+          <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+          Add Line Item
+        </button>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Invoice Date</label>
+          <input type="date" class="form-input" id="inv_date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Due Date</label>
+          <input type="date" class="form-input" id="inv_due">
+        </div>
+      </div>
+      <div style="text-align:right;padding:10px 0;border-top:1px solid var(--border);margin-top:8px;">
+        <span class="text-mid text-sm">Total: </span>
+        <span class="serif" style="font-size:22px;font-weight:500;color:var(--dark);" id="invoiceTotalDisplay">R 0.00</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('invoiceModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveInvoice()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        Send Invoice
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- INTAKE FORM MODAL (health questionnaire + e-sig) -->
+<div class="modal-overlay" id="intakeModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3>Client Health & Consent Form</h3>
+      <button class="btn-close-modal" onclick="closeModal('intakeModal')">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Select Client</label>
+        <select class="form-input" id="int_client"></select>
+      </div>
+      <div class="divider"></div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:500;margin-bottom:14px;">Health Questionnaire</div>
+
+      <div class="form-group">
+        <label class="form-label">Are you pregnant or trying to conceive?</label>
+        <select class="form-input" id="int_pregnant"><option value="No">No</option><option value="Yes">Yes</option><option value="Maybe">Unsure</option></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Do you have any skin conditions or allergies?</label>
+        <input type="text" class="form-input" id="int_skin" placeholder="e.g. eczema, latex allergy, none">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Any recent injuries, surgeries, or medical conditions?</label>
+        <input type="text" class="form-input" id="int_medical" placeholder="e.g. back surgery 2023, none">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Current medications (if relevant to treatments)</label>
+        <input type="text" class="form-input" id="int_meds" placeholder="e.g. blood thinners, retinoids, none">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Preferred pressure (massage)</label>
+        <select class="form-input" id="int_pressure">
+          <option>Light</option><option>Medium</option><option>Firm</option><option>Deep</option>
+        </select>
+      </div>
+
+      <div class="divider"></div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:500;margin-bottom:10px;">Consent & Waiver</div>
+      <div style="background:var(--cream);border-radius:var(--radius-sm);padding:14px 16px;font-size:12.5px;color:var(--mid);line-height:1.8;margin-bottom:16px;">
+        I, the undersigned, confirm that the information provided above is accurate and complete. I consent to receive treatments from Loveit Sanctuary and understand that I am responsible for disclosing any health conditions that may affect my treatments. I release Loveit Sanctuary and its therapists from liability for any adverse reactions resulting from undisclosed conditions. This consent applies to all future visits unless I advise otherwise in writing.<br><br>
+        <strong style="color:var(--dark);">Loveit Sanctuary · 2 Yellowwood Crescent, Diep River, Cape Town · 068 904 7292</strong>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Client Signature</label>
+        <div class="sig-canvas-wrap">
+          <canvas id="sigCanvas" height="140"></canvas>
+        </div>
+        <div class="sig-controls">
+          <button class="btn btn-ghost btn-xs" onclick="clearSignature()">
+            <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+            Clear
+          </button>
+          <span class="text-xs text-light" style="padding-top:4px;">Draw signature above using mouse or finger</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Date Signed</label>
+        <input type="date" class="form-input" id="int_sigdate">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('intakeModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveIntakeForm()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        Save Signed Form
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- BOOKING DETAIL MODAL -->
+<div class="modal-overlay" id="bookingDetailModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Booking Details</h3>
+      <button class="btn-close-modal" onclick="closeModal('bookingDetailModal')">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="bookingDetailBody"></div>
+    <div class="modal-footer" id="bookingDetailFooter"></div>
+  </div>
+</div>
+
+<!-- INVOICE VIEW MODAL -->
+<div class="modal-overlay" id="invoiceViewModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3 id="invViewTitle">Invoice</h3>
+      <button class="btn-close-modal" onclick="closeModal('invoiceViewModal')">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="invoiceViewBody"></div>
+    <div class="modal-footer" style="flex-wrap:wrap;gap:8px;">
+      <button class="btn btn-ghost" onclick="closeModal('invoiceViewModal')">Close</button>
+      <button class="btn btn-ghost" onclick="printInvoice()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+        Print
+      </button>
+      <button class="btn btn-ghost" id="invDownloadBtn" onclick="App.downloadInvoicePDF()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+        Download PDF
+      </button>
+      <button class="btn btn-wa" id="invSendWABtn" onclick="App.sendInvoiceWhatsApp()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+        Send via WhatsApp
+      </button>
+      <button class="btn btn-primary" id="invMarkPaidBtn" onclick="">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+        Mark as Paid
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD / EDIT USER MODAL -->
+<div class="modal-overlay" id="userModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="userModalTitle">Add User</h3>
+      <button class="btn-close-modal" onclick="closeModal('userModal')">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="um_id">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" class="form-input" id="um_name" placeholder="e.g. Lerato Dlamini">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Role</label>
+          <select class="form-input" id="um_role" onchange="Auth.updateRoleUI()">
+            <option value="owner">Owner</option>
+            <option value="admin">Admin</option>
+            <option value="therapist" selected>Therapist</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" class="form-input" id="um_email" placeholder="e.g. lerato@loveitsanctuary.co.za">
+      </div>
+      <div id="um_pwdSection">
+        <div class="form-group">
+          <label class="form-label">Password <span style="color:var(--light);font-size:10px;">(min 6 characters — user must change on first login)</span></label>
+          <div class="auth-input-wrap right">
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="left:11px;right:auto;pointer-events:none;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+            <input type="password" class="form-input" id="um_pwd" placeholder="Set initial password">
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" onclick="Auth.togglePwd('um_pwd',this)"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status</label>
+        <select class="form-input" id="um_status">
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('userModal')">Cancel</button>
+      <button class="btn btn-primary" id="um_saveBtn" onclick="Auth.saveUser()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+        Save User Account
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- CHANGE PASSWORD MODAL (in-app) -->
+<div class="modal-overlay" id="changePwdModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Change Password</h3>
+      <button class="btn-close-modal" onclick="closeModal('changePwdModal')">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="auth-error" id="inAppPwdError">
+        <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01"/></svg>
+        <span id="inAppPwdErrorMsg"></span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Current Password</label>
+        <input type="password" class="form-input" id="cp_current" placeholder="Your current password">
+      </div>
+      <div class="form-group">
+        <label class="form-label">New Password</label>
+        <input type="password" class="form-input" id="cp_new1" placeholder="New password (min 6 characters)">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confirm New Password</label>
+        <input type="password" class="form-input" id="cp_new2" placeholder="Confirm new password">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('changePwdModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="Auth.saveNewPassword()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+        Update Password
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   LOVEIT SANCTUARY — WELLNESS MANAGEMENT SYSTEM
+   © Nexa Global Solutions · Cape Town, South Africa
+═══════════════════════════════════════════════════════ */
+
+/* ── SEED DATA ─────────────────────────────────────── */
+const SEED_CLIENTS = [
+  { id:'c1', first:'Thandi',   last:'Mokoena',      phone:'082 341 7823', email:'thandi.mokoena@gmail.com',  dob:'1989-04-12', tag:'VIP',    notes:'Prefers firm pressure. Lavender allergy.', lastVisit:'2025-05-20', visits:18, joined:'2023-08-01' },
+  { id:'c2', first:'Sarah',    last:'van der Berg',  phone:'071 892 3341', email:'sarah.vdberg@icloud.com',   dob:'1994-11-03', tag:'VIP',    notes:'Sensitive skin — avoid fragrance products.', lastVisit:'2025-05-15', visits:24, joined:'2022-11-15' },
+  { id:'c3', first:'Amahle',   last:'Dlamini',       phone:'063 774 5512', email:'amahle.d@outlook.com',      dob:'1997-07-22', tag:'New',    notes:'First visit. Interested in skincare package.', lastVisit:'2025-05-25', visits:2, joined:'2025-05-01' },
+  { id:'c4', first:'Priya',    last:'Naidoo',        phone:'082 609 1177', email:'priya.naidoo@webmail.co.za',dob:'1986-02-14', tag:'VIP',    notes:'Monthly member. Deep tissue only.', lastVisit:'2025-05-10', visits:31, joined:'2022-03-10' },
+  { id:'c5', first:'Lisa',     last:'Joubert',       phone:'076 334 8892', email:'lisajoubert@gmail.com',     dob:'1992-09-30', tag:'New',    notes:'Waxing + facial combo preferred.', lastVisit:'2025-05-22', visits:5, joined:'2025-02-20' },
+  { id:'c6', first:'Fatima',   last:'Arendse',       phone:'084 221 9034', email:'fatima.arendse@gmail.com',  dob:'1980-06-18', tag:'Lapsed', notes:'Hasn\'t returned — send re-engagement offer.', lastVisit:'2025-03-15', visits:9, joined:'2023-01-05' },
+  { id:'c7', first:'Nomsa',    last:'Khumalo',       phone:'072 556 3318', email:'nomsa.k@vodamail.co.za',    dob:'1991-12-01', tag:'Lapsed', notes:'Used to book monthly — last no-show in March.', lastVisit:'2025-03-20', visits:7, joined:'2023-06-12' },
+  { id:'c8', first:'Karen',    last:'Pietersen',     phone:'083 447 2201', email:'karen.pietersen@icloud.com',dob:'1975-08-25', tag:'VIP',    notes:'Gift voucher client. Loves hot stone massage.', lastVisit:'2025-05-18', visits:14, joined:'2023-04-22' }
+];
+
+const SEED_BOOKINGS = [
+  { id:'b1',  clientId:'c2', date:'2025-05-28', time:'09:00', treatment:'Deep Tissue Massage (60 min)', therapist:'Candice', status:'Confirmed', notes:'', duration:60 },
+  { id:'b2',  clientId:'c1', date:'2025-05-28', time:'10:30', treatment:'Hydrating Facial',              therapist:'Lerato',  status:'Confirmed', notes:'Use gentle cleanser', duration:75 },
+  { id:'b3',  clientId:'c4', date:'2025-05-28', time:'13:00', treatment:'Hot Stone Massage (90 min)',    therapist:'Candice', status:'Confirmed', notes:'', duration:90 },
+  { id:'b4',  clientId:'c5', date:'2025-05-28', time:'15:00', treatment:'Full Leg Wax',                  therapist:'Lerato',  status:'Pending',   notes:'', duration:45 },
+  { id:'b5',  clientId:'c8', date:'2025-05-27', time:'10:00', treatment:'Hot Stone Massage (90 min)',    therapist:'Candice', status:'Completed', notes:'', duration:90 },
+  { id:'b6',  clientId:'c3', date:'2025-05-27', time:'14:00', treatment:'Express Facial (30 min)',       therapist:'Lerato',  status:'Completed', notes:'First-time client', duration:30 },
+  { id:'b7',  clientId:'c7', date:'2025-05-26', time:'11:00', treatment:'Swedish Massage (60 min)',      therapist:'Candice', status:'No-show',   notes:'', duration:60 },
+  { id:'b8',  clientId:'c6', date:'2025-05-25', time:'09:30', treatment:'Full Body Scrub',               therapist:'Lerato',  status:'Completed', notes:'', duration:60 },
+  { id:'b9',  clientId:'c4', date:'2025-05-29', time:'09:00', treatment:'Deep Tissue Massage (60 min)', therapist:'Candice', status:'Confirmed', notes:'', duration:60 },
+  { id:'b10', clientId:'c1', date:'2025-05-30', time:'11:00', treatment:'Hydrating Facial',              therapist:'Lerato',  status:'Confirmed', notes:'', duration:75 },
+  { id:'b11', clientId:'c2', date:'2025-05-24', time:'14:30', treatment:'Swedish Massage (60 min)',      therapist:'Candice', status:'Completed', notes:'', duration:60 },
+  { id:'b12', clientId:'c8', date:'2025-05-31', time:'10:00', treatment:'Hot Stone Massage (90 min)',    therapist:'Candice', status:'Pending',   notes:'Birthday treat', duration:90 }
+];
+
+const SEED_MEMBERSHIPS = [
+  { id:'m1', clientId:'c1', tier:'Radiance',  billing:'R 1 399/mo', start:'2024-01-01', renewal:'2025-06-01', status:'Active' },
+  { id:'m2', clientId:'c2', tier:'Harmony',   billing:'R 899/mo',   start:'2023-11-15', renewal:'2025-06-15', status:'Active' },
+  { id:'m3', clientId:'c4', tier:'Radiance',  billing:'R 1 399/mo', start:'2023-03-10', renewal:'2025-06-10', status:'Active' },
+  { id:'m4', clientId:'c8', tier:'Serenity',  billing:'R 499/mo',   start:'2024-04-22', renewal:'2025-06-22', status:'Active' },
+  { id:'m5', clientId:'c5', tier:'Serenity',  billing:'R 499/mo',   start:'2025-02-20', renewal:'2025-06-20', status:'Active' }
+];
+
+const SEED_INVOICES = [
+  { id:'i1', clientId:'c1', number:'LS-0024', items:[{desc:'Radiance Membership — June 2025',price:1399},{desc:'Hot Stone Massage (90 min)',price:680}], date:'2025-05-01', due:'2025-05-15', status:'Paid' },
+  { id:'i2', clientId:'c4', number:'LS-0025', items:[{desc:'Radiance Membership — June 2025',price:1399},{desc:'Dermalogica Face Wash',price:295}], date:'2025-05-05', due:'2025-05-20', status:'Paid' },
+  { id:'i3', clientId:'c8', number:'LS-0026', items:[{desc:'Serenity Membership — June 2025',price:499},{desc:'Swedish Massage (60 min)',price:550}], date:'2025-05-10', due:'2025-05-25', status:'Unpaid' },
+  { id:'i4', clientId:'c6', number:'LS-0027', items:[{desc:'Full Body Scrub',price:620},{desc:'Elemis Body Lotion',price:380}], date:'2025-04-20', due:'2025-05-05', status:'Overdue' }
+];
+
+const SEED_INTAKE = [
+  { id:'int1', clientId:'c1', type:'Health & Consent', sent:'2023-08-01', status:'Signed',   sigDate:'2023-08-02' },
+  { id:'int2', clientId:'c2', type:'Health & Consent', sent:'2022-11-15', status:'Signed',   sigDate:'2022-11-15' },
+  { id:'int3', clientId:'c4', type:'Health & Consent', sent:'2022-03-10', status:'Signed',   sigDate:'2022-03-11' },
+  { id:'int4', clientId:'c3', type:'Health & Consent', sent:'2025-05-25', status:'Pending',  sigDate:null },
+  { id:'int5', clientId:'c5', type:'Health & Consent', sent:'2025-02-20', status:'Signed',   sigDate:'2025-02-20' },
+  { id:'int6', clientId:'c8', type:'Health & Consent', sent:'2023-04-22', status:'Signed',   sigDate:'2023-04-23' },
+  { id:'int7', clientId:'c7', type:'Health & Consent', sent:'2023-06-12', status:'Signed',   sigDate:'2023-06-12' },
+  { id:'int8', clientId:'c6', type:'Health & Consent', sent:'2023-01-05', status:'Signed',   sigDate:'2023-01-05' }
+];
+
+const SERVICES = [
+  { name:'Swedish Massage', duration:'60 min', price:'R 550' },
+  { name:'Deep Tissue Massage', duration:'60 min', price:'R 620' },
+  { name:'Hot Stone Massage', duration:'90 min', price:'R 680' },
+  { name:'Full Body Scrub', duration:'60 min', price:'R 620' },
+  { name:'Express Facial', duration:'30 min', price:'R 350' },
+  { name:'Hydrating Facial', duration:'75 min', price:'R 580' },
+  { name:'Anti-Ageing Facial', duration:'90 min', price:'R 680' },
+  { name:'Full Leg Wax', duration:'45 min', price:'R 280' },
+  { name:'Brazilian Wax', duration:'30 min', price:'R 220' },
+  { name:'Eyebrow Wax & Shape', duration:'15 min', price:'R 120' }
+];
+
+const THERAPISTS = [
+  { name:'Candice', role:'Owner & Senior Therapist', specialties:'Massage, Facials' },
+  { name:'Lerato',  role:'Therapist', specialties:'Waxing, Facials, Body Treatments' }
+];
+
+const HOURS = [
+  { day:'Monday',    open:'09:00', close:'16:30', closed:false },
+  { day:'Tuesday',   open:'09:00', close:'16:30', closed:false },
+  { day:'Wednesday', open:'09:00', close:'16:30', closed:false },
+  { day:'Thursday',  open:'09:00', close:'16:30', closed:false },
+  { day:'Friday',    open:'09:00', close:'16:30', closed:false },
+  { day:'Saturday',  open:'09:00', close:'13:00', closed:false },
+  { day:'Sunday',    open:'',      close:'',      closed:true  }
+];
+
+const MESSAGE_TEMPLATES = [
+  {
+    label:'60-Day Re-engagement',
+    channel:'WhatsApp',
+    body:`Hi {name}, it's been a little while since we've seen you at Loveit Sanctuary — and we'd love to welcome you back. As a valued client, we're offering you a complimentary 15-minute add-on with your next booking. Treat yourself — you deserve it. Reply or call us to book.\n\nLoveit Sanctuary · 068 904 7292`
+  },
+  {
+    label:'Booking Confirmation',
+    channel:'WhatsApp',
+    body:`Hi {name}, your appointment at Loveit Sanctuary is confirmed:\n\nDate: {date} at {time}\nTreatment: {treatment} with {therapist}\nLocation: 2 Yellowwood Crescent, Diep River\n\nPlease arrive 5 minutes early. To reschedule, message us on 068 904 7292. See you soon.`
+  },
+  {
+    label:'Membership Renewal Reminder',
+    channel:'WhatsApp',
+    body:`Hi {name}, just a gentle reminder that your Loveit Sanctuary {tier} membership renews on {renewal_date}. Your next month of sanctuary moments is just around the corner. Questions? Reply here or call 068 904 7292.`
+  }
+];
+
+/* ── APP STATE ─────────────────────────────────────── */
+const App = {
+  clients:     [],
+  bookings:    [],
+  memberships: [],
+  invoices:    [],
+  intake:      [],
+  currentPage: 'dashboard',
+  invoiceLineCount: 1,
+  revenueChart: null,
+  sigCanvas: null,
+  sigCtx: null,
+  sigDrawing: false,
+  activeClientId: null,
+  activeInvoiceId: null,
+  reengageTab: 'overdue',
+
+  init() {
+    this.load();
+    this.initNav();
+    this.initSignatureCanvas();
+    this.seedModals();
+    this.navigate('dashboard');
+    // set today's date defaults
+    const today = new Date().toISOString().split('T')[0];
+    ['bk_date','mem_start','inv_date','int_sigdate'].forEach(id => {
+      const el = document.getElementById(id);
+      if(el) el.value = today;
+    });
+    const dueEl = document.getElementById('inv_due');
+    if(dueEl) {
+      const d = new Date(); d.setDate(d.getDate()+14);
+      dueEl.value = d.toISOString().split('T')[0];
+    }
+    document.getElementById('todayDate').textContent = this.fmtDateFull(today);
+    this.updateReengageBadge();
+  },
+
+  load() {
+    const stored = k => { try { return JSON.parse(localStorage.getItem('ls_'+k)); } catch { return null; } };
+    this.clients     = stored('clients')     || SEED_CLIENTS;
+    this.bookings    = stored('bookings')    || SEED_BOOKINGS;
+    this.memberships = stored('memberships') || SEED_MEMBERSHIPS;
+    this.invoices    = stored('invoices')    || SEED_INVOICES;
+    this.intake      = stored('intake')      || SEED_INTAKE;
+    this.save();
+  },
+
+  save() {
+    const s = (k,v) => localStorage.setItem('ls_'+k, JSON.stringify(v));
+    s('clients',     this.clients);
+    s('bookings',    this.bookings);
+    s('memberships', this.memberships);
+    s('invoices',    this.invoices);
+    s('intake',      this.intake);
+  },
+
+  uid(pfx) { return pfx + Date.now().toString(36); },
+
+  clientName(id) {
+    const c = this.clients.find(x=>x.id===id);
+    return c ? c.first+' '+c.last : '—';
+  },
+  clientById(id) { return this.clients.find(x=>x.id===id); },
+  clientInitials(id) {
+    const c = this.clientById(id);
+    return c ? c.first[0]+c.last[0] : '?';
+  },
+  avatarColor(id) {
+    const colors = ['#3D4A35','#4F6141','#C4967E','#B99469','#6B6355','#2A3324'];
+    const i = id.charCodeAt(id.length-1) % colors.length;
+    return colors[i];
+  },
+
+  fmtDate(str) {
+    if(!str) return '—';
+    const d = new Date(str+'T12:00:00');
+    return d.toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'});
+  },
+  fmtDateFull(str) {
+    if(!str) return '';
+    const d = new Date(str+'T12:00:00');
+    return d.toLocaleDateString('en-ZA',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  },
+  fmtCurrency(n) { return 'R ' + Number(n).toLocaleString('en-ZA'); },
+  daysSince(str) {
+    if(!str) return 999;
+    return Math.floor((Date.now() - new Date(str+'T12:00:00').getTime()) / 86400000);
+  },
+
+  /* ── NAVIGATION ─────────────────────────────────── */
+  initNav() {
+    document.querySelectorAll('[data-page]').forEach(el => {
+      el.addEventListener('click', () => this.navigate(el.dataset.page));
+    });
+  },
+
+  navigate(page) {
+    this.currentPage = page;
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.querySelectorAll('.bottom-nav-item').forEach(n => n.classList.remove('active'));
+
+    const pg = document.getElementById('page-'+page);
+    if(pg) pg.classList.add('active');
+    document.querySelectorAll(`[data-page="${page}"]`).forEach(n => n.classList.add('active'));
+
+    const titles = {
+      dashboard:   ['Dashboard', 'Good morning, Candice — here\'s your sanctuary overview'],
+      bookings:    ['Bookings', 'Manage all appointments at Loveit Sanctuary'],
+      clients:     ['Clients', 'Your full client register — every profile, every treatment history'],
+      memberships: ['Memberships', 'Active members and their billing status'],
+      invoices:    ['Invoices & Retail', 'Treatment invoices, product sales and payment tracking'],
+      intake:      ['Intake Forms', 'Client health questionnaires and signed consent waivers'],
+      reengage:    ['Re-engagement', 'Clients who haven\'t visited in 60+ days — time to reach out'],
+      settings:    ['Settings', 'Business details, services, therapists and automation']
+    };
+    const [title, sub] = titles[page] || ['Loveit Sanctuary',''];
+    document.getElementById('topbarTitle').textContent = title;
+    document.getElementById('topbarSub').textContent = sub;
+
+    const renders = {
+      dashboard:   () => this.renderDashboard(),
+      bookings:    () => this.renderBookings(),
+      clients:     () => this.renderClients(),
+      memberships: () => this.renderMemberships(),
+      invoices:    () => this.renderInvoices(),
+      intake:      () => this.renderIntake(),
+      reengage:    () => this.renderReengage(),
+      settings:    () => this.renderSettings()
+    };
+    if(renders[page]) renders[page]();
+  },
+
+  /* ── DASHBOARD ───────────────────────────────────── */
+  renderDashboard() {
+    const today = new Date().toISOString().split('T')[0];
+    const todayBks = this.bookings.filter(b=>b.date===today);
+    const lapsedCount = this.clients.filter(c=>this.daysSince(c.lastVisit)>=60).length;
+    const activeMembers = this.memberships.filter(m=>m.status==='Active').length;
+
+    // Weekly revenue (completed bookings this week)
+    const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate()-7);
+    const weekRevenue = this.bookings
+      .filter(b=>b.status==='Completed' && new Date(b.date+'T12:00:00')>=weekAgo)
+      .reduce((s,b)=>{ const svc = SERVICES.find(x=>x.name.startsWith(b.treatment.split('(')[0].trim())); return s+(svc?parseInt(svc.price.replace(/\D/g,'')):0); }, 0);
+
+    const statsEl = document.getElementById('dashStats');
+    statsEl.innerHTML = `
+      <div class="stat-card">
+        <div class="stat-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" stroke-width="1.5"/><path stroke-width="1.5" d="M16 2v4M8 2v4M3 10h18"/></svg></div>
+        <div class="stat-label">Today's Bookings</div>
+        <div class="stat-value">${todayBks.length}</div>
+        <div class="stat-sub">${todayBks.filter(b=>b.status==='Confirmed').length} confirmed</div>
+      </div>
+      <div class="stat-card rose">
+        <div class="stat-icon"><svg fill="none" stroke="var(--rose)" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-width="1.5"/><path stroke-width="1.5" d="M12 6v6l4 2"/></svg></div>
+        <div class="stat-label">Weekly Revenue</div>
+        <div class="stat-value" style="font-size:26px;">${this.fmtCurrency(weekRevenue)}</div>
+        <div class="stat-sub">Completed treatments</div>
+      </div>
+      <div class="stat-card gold">
+        <div class="stat-icon"><svg fill="none" stroke="var(--gold)" viewBox="0 0 24 24"><path stroke-width="1.5" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
+        <div class="stat-label">Active Members</div>
+        <div class="stat-value">${activeMembers}</div>
+        <div class="stat-sub">Membership holders</div>
+      </div>
+      <div class="stat-card mid">
+        <div class="stat-icon"><svg fill="none" stroke="var(--mid)" viewBox="0 0 24 24"><path stroke-width="1.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg></div>
+        <div class="stat-label">Need Re-engagement</div>
+        <div class="stat-value">${lapsedCount}</div>
+        <div class="stat-sub">60+ days since last visit</div>
+      </div>
+    `;
+
+    // Revenue chart
+    const labels = [], data = [];
+    for(let i=29;i>=0;i--){
+      const d = new Date(); d.setDate(d.getDate()-i);
+      const ds = d.toISOString().split('T')[0];
+      labels.push(i%5===0 ? this.fmtDate(ds).split(' ')[0]+' '+this.fmtDate(ds).split(' ')[1] : '');
+      const dayRev = this.bookings
+        .filter(b=>b.date===ds && b.status==='Completed')
+        .reduce((s,b)=>{ const svc = SERVICES.find(x=>x.name.startsWith(b.treatment.split('(')[0].trim())); return s+(svc?parseInt(svc.price.replace(/\D/g,'')):0); }, 0);
+      data.push(dayRev || (Math.random()*800+200|0)); // seed visual data
+    }
+    const totalRev = data.reduce((a,b)=>a+b,0);
+    document.getElementById('dashRevBadge').textContent = this.fmtCurrency(totalRev);
+
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+    if(this.revenueChart) this.revenueChart.destroy();
+    this.revenueChart = new Chart(ctx, {
+      type:'line',
+      data:{
+        labels,
+        datasets:[{
+          data,
+          fill:true,
+          borderColor:'#3D4A35',
+          backgroundColor:'rgba(61,74,53,.08)',
+          tension:.4,
+          borderWidth:2,
+          pointRadius:0,
+          pointHoverRadius:4,
+          pointHoverBackgroundColor:'#3D4A35'
+        }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:(c)=>'R '+c.parsed.y.toLocaleString('en-ZA') } } },
+        scales:{
+          x:{ grid:{display:false}, ticks:{color:'#9B9186',font:{size:10}} },
+          y:{ grid:{color:'rgba(0,0,0,.05)'}, ticks:{color:'#9B9186',font:{size:10},callback:v=>'R'+Math.round(v/100)*100} }
+        }
+      }
+    });
+
+    // Today's bookings
+    const tbEl = document.getElementById('todayBookings');
+    if(!todayBks.length) {
+      tbEl.innerHTML = '<div class="empty-state" style="padding:30px 20px;"><p>No appointments scheduled for today.</p></div>';
+    } else {
+      tbEl.innerHTML = todayBks.sort((a,b)=>a.time.localeCompare(b.time)).map(b=>`
+        <div class="booking-slot" style="border-radius:0;border-left:none;border-right:none;border-top:none;">
+          <div class="booking-time">${b.time}</div>
+          <div class="booking-info">
+            <div class="booking-client-name">${this.clientName(b.clientId)}</div>
+            <div class="booking-treatment">${b.treatment}</div>
+            <div class="booking-therapist">with ${b.therapist}</div>
+          </div>
+          <span class="badge badge-${b.status.toLowerCase().replace('-','')}">${b.status}</span>
+        </div>
+      `).join('');
+    }
+
+    // Top treatments
+    const treatCount = {};
+    this.bookings.forEach(b=>{ treatCount[b.treatment]=(treatCount[b.treatment]||0)+1; });
+    const topT = Object.entries(treatCount).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    const maxT = topT[0]?.[1]||1;
+    document.getElementById('topTreatments').innerHTML = topT.map(([name,count])=>`
+      <div style="margin-bottom:14px;">
+        <div class="flex justify-between mb-4">
+          <span class="text-sm fw-500">${name.split('(')[0].trim()}</span>
+          <span class="text-sm text-light">${count} bookings</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${(count/maxT*100).toFixed(0)}%"></div></div>
+      </div>
+    `).join('');
+
+    // Membership overview
+    const tiers = {Serenity:0,Harmony:0,Radiance:0};
+    this.memberships.filter(m=>m.status==='Active').forEach(m=>{ if(tiers[m.tier]!==undefined) tiers[m.tier]++; });
+    document.getElementById('membershipOverview').innerHTML = Object.entries(tiers).map(([tier,count])=>`
+      <div class="flex justify-between items-center" style="padding:10px 0;border-bottom:1px solid var(--cream-dark);">
+        <div>
+          <div class="fw-500 text-sm">${tier}</div>
+          <div class="text-xs text-light">${tier==='Serenity'?'R 499/mo':tier==='Harmony'?'R 899/mo':'R 1 399/mo'}</div>
+        </div>
+        <div class="serif" style="font-size:24px;font-weight:500;">${count}</div>
+      </div>
+    `).join('') + `<div class="flex justify-between items-center" style="padding:12px 0 0;">
+      <span class="text-sm text-mid">Monthly recurring</span>
+      <span class="serif" style="font-size:18px;font-weight:500;color:var(--gold);">
+        ${this.fmtCurrency(this.memberships.filter(m=>m.status==='Active').reduce((s,m)=>s+(m.tier==='Serenity'?499:m.tier==='Harmony'?899:1399),0))}
+      </span>
+    </div>`;
+  },
+
+  /* ── BOOKINGS ────────────────────────────────────── */
+  renderBookings() {
+    const q = (document.getElementById('bookingSearch')?.value||'').toLowerCase();
+    const sf = document.getElementById('bookingStatusFilter')?.value||'';
+    const tf = document.getElementById('bookingTherapistFilter')?.value||'';
+
+    // populate therapist filter
+    const thEl = document.getElementById('bookingTherapistFilter');
+    if(thEl && thEl.options.length===1){
+      THERAPISTS.forEach(t=>{ const o=document.createElement('option'); o.value=t.name; o.textContent=t.name; thEl.appendChild(o); });
+    }
+
+    let bks = [...this.bookings].sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
+    if(q) bks = bks.filter(b=>this.clientName(b.clientId).toLowerCase().includes(q)||b.treatment.toLowerCase().includes(q));
+    if(sf) bks = bks.filter(b=>b.status===sf);
+    if(tf) bks = bks.filter(b=>b.therapist===tf);
+
+    const tbody = document.getElementById('bookingsTableBody');
+    if(!bks.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--light);">No bookings match your filters.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = bks.map(b=>`
+      <tr>
+        <td>
+          <div class="td-name">${this.fmtDate(b.date)}</div>
+          <div class="td-sub">${b.time}</div>
+        </td>
+        <td>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="avatar" style="width:28px;height:28px;font-size:11px;background:${this.avatarColor(b.clientId)};">${this.clientInitials(b.clientId)}</div>
+            <div class="td-name">${this.clientName(b.clientId)}</div>
+          </div>
+        </td>
+        <td style="max-width:200px;">${b.treatment}</td>
+        <td>${b.therapist}</td>
+        <td>${b.duration} min</td>
+        <td><span class="badge badge-${b.status.toLowerCase().replace('-','')}">${b.status}</span></td>
+        <td>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-ghost btn-xs" onclick="App.viewBooking('${b.id}')">
+              <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+              View
+            </button>
+            ${b.status==='Confirmed'?`<button class="btn btn-ghost btn-xs" style="color:var(--success);border-color:var(--success);" onclick="App.markBookingComplete('${b.id}')">
+              <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+              Done
+            </button>`:''}
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  },
+
+  viewBooking(id) {
+    const b = this.bookings.find(x=>x.id===id);
+    if(!b) return;
+    const c = this.clientById(b.clientId);
+    document.getElementById('bookingDetailBody').innerHTML = `
+      <div class="detail-row"><span class="detail-label">Client</span><div class="detail-value fw-500">${this.clientName(b.clientId)}</div></div>
+      <div class="detail-row"><span class="detail-label">Date</span><div class="detail-value">${this.fmtDate(b.date)}</div></div>
+      <div class="detail-row"><span class="detail-label">Time</span><div class="detail-value">${b.time}</div></div>
+      <div class="detail-row"><span class="detail-label">Treatment</span><div class="detail-value">${b.treatment}</div></div>
+      <div class="detail-row"><span class="detail-label">Therapist</span><div class="detail-value">${b.therapist}</div></div>
+      <div class="detail-row"><span class="detail-label">Duration</span><div class="detail-value">${b.duration} minutes</div></div>
+      <div class="detail-row"><span class="detail-label">Status</span><div class="detail-value"><span class="badge badge-${b.status.toLowerCase().replace('-','')}">${b.status}</span></div></div>
+      ${b.notes?`<div class="detail-row"><span class="detail-label">Notes</span><div class="detail-value">${b.notes}</div></div>`:''}
+    `;
+    const waNum = c?.phone?.replace(/\D/g,'');
+    const waMsg = encodeURIComponent(`Hi ${c?.first||''}, your appointment at Loveit Sanctuary is confirmed:\n\nDate: ${this.fmtDate(b.date)} at ${b.time}\nTreatment: ${b.treatment} with ${b.therapist}\nLocation: 2 Yellowwood Crescent, Diep River\n\nSee you soon — Loveit Sanctuary.`);
+    document.getElementById('bookingDetailFooter').innerHTML = `
+      <button class="btn btn-ghost" onclick="closeModal('bookingDetailModal')">Close</button>
+      ${waNum?`<a href="https://wa.me/27${waNum.substring(1)}?text=${waMsg}" target="_blank"><button class="btn btn-wa">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+        Send Confirmation
+      </button></a>`:''}
+      ${b.status!=='Completed'&&b.status!=='Cancelled'?`<button class="btn btn-primary" onclick="App.markBookingComplete('${id}');closeModal('bookingDetailModal');">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+        Mark Complete
+      </button>`:''}
+    `;
+    openModal('bookingDetailModal');
+  },
+
+  markBookingComplete(id) {
+    const b = this.bookings.find(x=>x.id===id);
+    if(!b) return;
+    b.status = 'Completed';
+    // update lastVisit
+    const c = this.clients.find(x=>x.id===b.clientId);
+    if(c && b.date > (c.lastVisit||'')) { c.lastVisit = b.date; c.visits = (c.visits||0)+1; }
+    this.save();
+    this.renderBookings();
+    this.updateReengageBadge();
+    toast('Booking marked as completed.', 'success');
+  },
+
+  /* ── CLIENTS ─────────────────────────────────────── */
+  renderClients() {
+    const q = (document.getElementById('clientSearch')?.value||'').toLowerCase();
+    const tf = document.getElementById('clientTagFilter')?.value||'';
+    let cls = [...this.clients];
+    if(q) cls = cls.filter(c=>(c.first+' '+c.last).toLowerCase().includes(q)||c.phone?.includes(q)||c.email?.toLowerCase().includes(q));
+    if(tf) cls = cls.filter(c=>c.tag===tf);
+
+    const grid = document.getElementById('clientsGrid');
+    if(!cls.length) {
+      grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4" stroke-width="1.5"/></svg><h3>No clients found</h3><p>Try a different search or add a new client.</p></div>';
+      return;
+    }
+    grid.innerHTML = cls.map(c=>`
+      <div class="client-card" onclick="App.viewClient('${c.id}')">
+        <div class="client-card-top">
+          <div class="avatar" style="background:${this.avatarColor(c.id)};">${c.first[0]}${c.last[0]}</div>
+          <div style="flex:1;min-width:0;">
+            <div class="client-card-name">${c.first} ${c.last}</div>
+            <div class="client-card-contact">${c.phone||''}</div>
+          </div>
+          <span class="badge badge-${c.tag?.toLowerCase()||'new'}">${c.tag||'New'}</span>
+        </div>
+        <div class="client-card-footer">
+          <span>
+            <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display:inline;vertical-align:-1px;"><rect x="3" y="4" width="18" height="18" rx="2" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18"/></svg>
+            Last: ${this.fmtDate(c.lastVisit)}
+          </span>
+          <span>
+            <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display:inline;vertical-align:-1px;"><circle cx="9" cy="7" r="4" stroke-width="2"/></svg>
+            ${c.visits||0} visits
+          </span>
+        </div>
+      </div>
+    `).join('');
+  },
+
+  viewClient(id) {
+    const c = this.clientById(id);
+    if(!c) return;
+    this.activeClientId = id;
+    document.getElementById('cdm_name').textContent = c.first+' '+c.last;
+    const mem = this.memberships.find(m=>m.clientId===id&&m.status==='Active');
+    const bks = this.bookings.filter(b=>b.clientId===id).sort((a,b)=>b.date.localeCompare(a.date));
+    const intake = this.intake.find(i=>i.clientId===id);
+    document.getElementById('clientDetailBody').innerHTML = `
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
+        <div class="avatar" style="width:52px;height:52px;font-size:20px;background:${this.avatarColor(id)};">${c.first[0]}${c.last[0]}</div>
+        <div>
+          <div style="font-size:18px;font-weight:500;">${c.first} ${c.last}</div>
+          <span class="badge badge-${c.tag?.toLowerCase()||'new'}">${c.tag||'New'}</span>
+          ${mem?`<span class="badge badge-gold" style="margin-left:6px;">${mem.tier} Member</span>`:''}
+        </div>
+      </div>
+      <div class="detail-row"><span class="detail-label">Phone</span><div class="detail-value">${c.phone||'—'}</div></div>
+      <div class="detail-row"><span class="detail-label">Email</span><div class="detail-value">${c.email||'—'}</div></div>
+      <div class="detail-row"><span class="detail-label">Date of Birth</span><div class="detail-value">${this.fmtDate(c.dob)}</div></div>
+      <div class="detail-row"><span class="detail-label">Joined</span><div class="detail-value">${this.fmtDate(c.joined)}</div></div>
+      <div class="detail-row"><span class="detail-label">Total Visits</span><div class="detail-value">${c.visits||0}</div></div>
+      <div class="detail-row"><span class="detail-label">Last Visit</span><div class="detail-value">${this.fmtDate(c.lastVisit)} <span class="text-xs text-light">(${this.daysSince(c.lastVisit)} days ago)</span></div></div>
+      <div class="detail-row"><span class="detail-label">Membership</span><div class="detail-value">${mem?`${mem.tier} — ${mem.billing}`:'No active membership'}</div></div>
+      <div class="detail-row"><span class="detail-label">Intake Form</span><div class="detail-value"><span class="badge badge-${intake?.status?.toLowerCase()||'unsigned'}">${intake?.status||'Not sent'}</span></div></div>
+      <div class="detail-row"><span class="detail-label">Notes</span><div class="detail-value">${c.notes||'—'}</div></div>
+      <div style="margin-top:16px;">
+        <div class="form-label" style="margin-bottom:10px;">Treatment History</div>
+        ${bks.length?bks.slice(0,5).map(b=>`
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--cream-dark);font-size:13px;">
+            <span>${b.treatment.split('(')[0].trim()}</span>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span class="text-light">${this.fmtDate(b.date)}</span>
+              <span class="badge badge-${b.status.toLowerCase().replace('-','')}">${b.status}</span>
+            </div>
+          </div>
+        `).join(''):`<div class="text-sm text-light">No treatment history yet.</div>`}
+      </div>
+    `;
+    const waNum = c.phone?.replace(/\D/g,'');
+    const waBtn = document.getElementById('cdm_wa');
+    if(waNum) {
+      waBtn.onclick = ()=>window.open(`https://wa.me/27${waNum.substring(1)}`,'_blank');
+      waBtn.style.display='';
+    } else { waBtn.style.display='none'; }
+    openModal('clientDetailModal');
+  },
+
+  bookClientFromProfile() {
+    closeModal('clientDetailModal');
+    const sel = document.getElementById('bk_client');
+    if(sel && this.activeClientId) sel.value = this.activeClientId;
+    openModal('bookingModal');
+  }
+};
+
+/* ── MODAL HELPERS ──────────────────────────────────── */
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow='';
+}
+document.querySelectorAll('.modal-overlay').forEach(el=>{
+  el.addEventListener('click',e=>{ if(e.target===el) closeModal(el.id); });
+});
+
+/* ── TOAST ──────────────────────────────────────────── */
+function toast(msg, type='') {
+  const icons = {
+    success:`<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>`,
+    error:`<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>`,
+    warning:`<svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>`
+  };
+  const t = document.createElement('div');
+  t.className = 'toast'+(type?' '+type:'');
+  t.innerHTML = (icons[type]||'')+msg;
+  document.getElementById('toastContainer').appendChild(t);
+  setTimeout(()=>t.remove(), 3500);
+}
+
+/* ── SEED MODAL SELECTS ─────────────────────────────── */
+App.seedModals = function() {
+  // Populate client dropdowns
+  ['bk_client','cl_ref','mem_client','inv_client','int_client'].forEach(id=>{
+    const el = document.getElementById(id); if(!el) return;
+    el.innerHTML = '<option value="">Select client…</option>';
+    App.clients.forEach(c=>{ const o=document.createElement('option'); o.value=c.id; o.textContent=c.first+' '+c.last; el.appendChild(o); });
+  });
+  // Populate treatment dropdown
+  const trEl = document.getElementById('bk_treatment');
+  if(trEl) { trEl.innerHTML=''; SERVICES.forEach(s=>{ const o=document.createElement('option'); o.value=s.name; o.textContent=s.name+' — '+s.price; trEl.appendChild(o); }); }
+  // Therapists
+  const thEl = document.getElementById('bk_therapist');
+  if(thEl) { thEl.innerHTML=''; THERAPISTS.forEach(t=>{ const o=document.createElement('option'); o.value=t.name; o.textContent=t.name; thEl.appendChild(o); }); }
+};
+
+function renderBookings(){ App.renderBookings(); }
+function renderClients(){ App.renderClients(); }
+function renderInvoices(){ App.renderInvoices(); }
+
+function saveBooking() {
+  const cid = document.getElementById('bk_client').value;
+  const date = document.getElementById('bk_date').value;
+  const time = document.getElementById('bk_time').value;
+  const treatment = document.getElementById('bk_treatment').value;
+  const therapist = document.getElementById('bk_therapist').value;
+  const status = document.getElementById('bk_status').value;
+  const notes = document.getElementById('bk_notes').value;
+  if(!cid||!date||!treatment) { toast('Please fill in client, date and treatment.','error'); return; }
+  const svc = SERVICES.find(s=>s.name===treatment);
+  App.bookings.push({ id:App.uid('b'), clientId:cid, date, time, treatment, therapist, status, notes, duration:svc?parseInt(svc.duration):60 });
+  App.save();
+  closeModal('bookingModal');
+  document.getElementById('bk_notes').value='';
+  toast('Booking confirmed for '+App.clientName(cid)+'.','success');
+  if(App.currentPage==='bookings') App.renderBookings();
+  if(App.currentPage==='dashboard') App.renderDashboard();
+}
+
+function saveClient() {
+  const first=document.getElementById('cl_first').value.trim();
+  const last=document.getElementById('cl_last').value.trim();
+  if(!first||!last){toast('Please enter first and last name.','error');return;}
+  const c={
+    id:App.uid('c'), first, last,
+    phone:document.getElementById('cl_phone').value.trim(),
+    email:document.getElementById('cl_email').value.trim(),
+    dob:document.getElementById('cl_dob').value,
+    tag:document.getElementById('cl_tag').value,
+    notes:document.getElementById('cl_notes').value.trim(),
+    lastVisit:null, visits:0, joined:new Date().toISOString().split('T')[0]
+  };
+  App.clients.push(c);
+  App.save();
+  App.seedModals();
+  closeModal('clientModal');
+  ['cl_first','cl_last','cl_phone','cl_email','cl_notes'].forEach(id=>document.getElementById(id).value='');
+  toast(first+' '+last+' added to Loveit Sanctuary.','success');
+  if(App.currentPage==='clients') App.renderClients();
+}
+
+/* ── MEMBERSHIPS ────────────────────────────────────── */
+App.renderMemberships = function() {
+  const tiers=[
+    {name:'Serenity',price:'R 499',period:'/month',color:'var(--sage)',features:['1 x 60-min treatment per month','10% off retail products','Priority booking access','Birthday treat — complimentary wax']},
+    {name:'Harmony', price:'R 899',period:'/month',color:'var(--rose)',featured:true,features:['2 x treatments per month (any combination)','15% off retail products','Priority booking access','Birthday treat — complimentary facial upgrade','Monthly wellness check-in call']},
+    {name:'Radiance',price:'R 1 399',period:'/month',color:'var(--gold)',features:['3 x treatments per month','20% off retail products','Dedicated therapist preference','Quarterly skin analysis consultation','Birthday treat — complimentary add-on','Exclusive member-only specials']}
+  ];
+  document.getElementById('membershipTiers').innerHTML = tiers.map(t=>`
+    <div class="membership-tier-card ${t.featured?'featured':''}">
+      <div class="tier-stripe" style="background:${t.color};"></div>
+      <div style="margin-top:12px;">
+        <div class="tier-name">${t.name}</div>
+        <div class="tier-price" style="color:${t.color};">${t.price}<span>${t.period}</span></div>
+        ${t.featured?'<div style="font-size:11px;color:var(--rose);font-weight:600;margin-top:4px;text-transform:uppercase;letter-spacing:.5px;">Most Popular</div>':''}
+        <div class="tier-features mt-16">
+          ${t.features.map(f=>`<div class="tier-feature"><svg width="13" height="13" fill="none" stroke="${t.color}" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>${f}</div>`).join('')}
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  const tbody = document.getElementById('membershipsTableBody');
+  if(!this.memberships.length){
+    tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--light);">No members yet.</td></tr>'; return;
+  }
+  tbody.innerHTML = this.memberships.map(m=>{
+    const c=this.clientById(m.clientId);
+    const tierColor=m.tier==='Radiance'?'var(--gold)':m.tier==='Harmony'?'var(--rose)':'var(--sage)';
+    return `<tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="avatar" style="width:28px;height:28px;font-size:11px;background:${this.avatarColor(m.clientId)};">${c?c.first[0]+c.last[0]:'?'}</div>
+          <div class="td-name">${c?c.first+' '+c.last:'Unknown'}</div>
+        </div>
+      </td>
+      <td><span style="font-weight:600;color:${tierColor};">${m.tier}</span></td>
+      <td>${m.billing}</td>
+      <td>${this.fmtDate(m.renewal)}</td>
+      <td><span class="badge badge-${m.status.toLowerCase()}">${m.status}</span></td>
+      <td>
+        <div style="display:flex;gap:6px;">
+          ${c?.phone?`<a href="https://wa.me/27${(c.phone.replace(/\D/g,'')).substring(1)}?text=${encodeURIComponent('Hi '+c.first+', your Loveit Sanctuary '+m.tier+' membership renews on '+this.fmtDate(m.renewal)+'. Message us if you have any questions — 068 904 7292.')}" target="_blank"><button class="btn btn-wa btn-xs">
+            <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>Remind
+          </button></a>`:''}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+};
+
+function saveMembership(){
+  const cid=document.getElementById('mem_client').value;
+  const tier=document.getElementById('mem_tier').value.split('—')[0].trim();
+  const start=document.getElementById('mem_start').value;
+  if(!cid||!start){toast('Please select a client and start date.','error');return;}
+  const renewal=new Date(start); renewal.setMonth(renewal.getMonth()+1);
+  App.memberships.push({id:App.uid('m'),clientId:cid,tier,billing:tier==='Serenity'?'R 499/mo':tier==='Harmony'?'R 899/mo':'R 1 399/mo',start,renewal:renewal.toISOString().split('T')[0],status:'Active'});
+  App.save(); closeModal('membershipModal');
+  toast(App.clientName(cid)+' enrolled in '+tier+' membership.','success');
+  App.renderMemberships();
+}
+
+/* ── INVOICES ────────────────────────────────────────── */
+App.invoiceLineCount=1;
+App.renderInvoices=function(){
+  const q=(document.getElementById('invoiceSearch')?.value||'').toLowerCase();
+  const sf=document.getElementById('invoiceStatusFilter')?.value||'';
+  let invs=[...this.invoices].sort((a,b)=>b.date.localeCompare(a.date));
+  if(q) invs=invs.filter(i=>this.clientName(i.clientId).toLowerCase().includes(q)||i.number.toLowerCase().includes(q));
+  if(sf) invs=invs.filter(i=>i.status===sf);
+
+  const totalPaid=this.invoices.filter(i=>i.status==='Paid').reduce((s,i)=>s+i.items.reduce((a,x)=>a+x.price,0),0);
+  const totalUnpaid=this.invoices.filter(i=>i.status==='Unpaid').reduce((s,i)=>s+i.items.reduce((a,x)=>a+x.price,0),0);
+  const totalOverdue=this.invoices.filter(i=>i.status==='Overdue').reduce((s,i)=>s+i.items.reduce((a,x)=>a+x.price,0),0);
+  document.getElementById('invoiceStats').innerHTML=`
+    <div class="stat-card"><div class="stat-label">Total Collected</div><div class="stat-value" style="font-size:24px;color:var(--success);">${this.fmtCurrency(totalPaid)}</div><div class="stat-sub">Paid invoices</div></div>
+    <div class="stat-card rose"><div class="stat-label">Outstanding</div><div class="stat-value" style="font-size:24px;">${this.fmtCurrency(totalUnpaid)}</div><div class="stat-sub">Awaiting payment</div></div>
+    <div class="stat-card mid"><div class="stat-label">Overdue</div><div class="stat-value" style="font-size:24px;color:var(--error);">${this.fmtCurrency(totalOverdue)}</div><div class="stat-sub">Past due date</div></div>
+  `;
+
+  const tbody=document.getElementById('invoicesTableBody');
+  tbody.innerHTML=invs.map(inv=>{
+    const total=inv.items.reduce((s,x)=>s+x.price,0);
+    return `<tr>
+      <td class="td-name">${inv.number}</td>
+      <td>${this.clientName(inv.clientId)}</td>
+      <td class="text-sm text-light">${inv.items.map(x=>x.desc.split('(')[0].trim()).join(', ')}</td>
+      <td><span class="serif" style="font-size:16px;font-weight:500;">${this.fmtCurrency(total)}</span></td>
+      <td>${this.fmtDate(inv.date)}</td>
+      <td><span class="badge badge-${inv.status.toLowerCase()}">${inv.status}</span></td>
+      <td>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-ghost btn-xs" onclick="App.viewInvoice('${inv.id}')">
+            <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>View
+          </button>
+          <button class="btn btn-ghost btn-xs" onclick="App.downloadInvoicePDF('${inv.id}')">
+            <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>PDF
+          </button>
+          <button class="btn btn-wa btn-xs" onclick="App.sendInvoiceWhatsApp('${inv.id}')">
+            <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>WA
+          </button>
+          ${inv.status!=='Paid'?`<button class="btn btn-ghost btn-xs" style="color:var(--success);border-color:var(--success);" onclick="App.markPaid('${inv.id}')">
+            <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>Paid
+          </button>`:''}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+};
+
+App.viewInvoice=function(id){
+  const inv=this.invoices.find(x=>x.id===id);
+  if(!inv) return;
+  this.activeInvoiceId=id;
+  const c=this.clientById(inv.clientId);
+  const total=inv.items.reduce((s,x)=>s+x.price,0);
+  document.getElementById('invViewTitle').textContent=inv.number;
+  document.getElementById('invoiceViewBody').innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;">
+      <div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:var(--sage);">Loveit Sanctuary</div>
+        <div class="text-sm text-mid">2 Yellowwood Crescent, Diep River, 7800</div>
+        <div class="text-sm text-mid">Cape Town · 068 904 7292</div>
+      </div>
+      <div style="text-align:right;">
+        <div class="serif" style="font-size:20px;font-weight:500;">${inv.number}</div>
+        <span class="badge badge-${inv.status.toLowerCase()}">${inv.status}</span>
+      </div>
+    </div>
+    <div style="background:var(--cream);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:20px;">
+      <div class="text-xs text-light" style="margin-bottom:4px;">Billed To</div>
+      <div class="fw-500">${c?c.first+' '+c.last:'Unknown Client'}</div>
+      ${c?.phone?`<div class="text-sm text-light">${c.phone}</div>`:''}
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:10px;" class="text-xs text-light">
+      <span>Invoice Date: ${this.fmtDate(inv.date)}</span>
+      <span>Due Date: ${this.fmtDate(inv.due)}</span>
+    </div>
+    <table style="width:100%;margin-bottom:16px;">
+      <thead><tr><th style="text-align:left;padding:8px 0;border-bottom:2px solid var(--border);font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--light);">Description</th><th style="text-align:right;padding:8px 0;border-bottom:2px solid var(--border);font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:var(--light);">Amount</th></tr></thead>
+      <tbody>${inv.items.map(x=>`<tr><td style="padding:10px 0;border-bottom:1px solid var(--cream-dark);font-size:13px;">${x.desc}</td><td style="padding:10px 0;border-bottom:1px solid var(--cream-dark);text-align:right;font-size:13px;">${this.fmtCurrency(x.price)}</td></tr>`).join('')}</tbody>
+    </table>
+    <div style="display:flex;justify-content:flex-end;">
+      <div style="text-align:right;">
+        <div class="text-sm text-light">Total</div>
+        <div class="serif" style="font-size:28px;font-weight:500;color:var(--dark);">${this.fmtCurrency(total)}</div>
+      </div>
+    </div>
+    <div style="margin-top:16px;padding:12px 16px;background:var(--cream);border-radius:var(--radius-sm);font-size:12px;color:var(--mid);">
+      Payment: EFT or cash. Please use invoice number as reference.<br>Account details available on request from Candice · 068 904 7292
+    </div>
+  `;
+  const mpBtn=document.getElementById('invMarkPaidBtn');
+  if(inv.status==='Paid'){mpBtn.style.display='none';}else{
+    mpBtn.style.display='';
+    mpBtn.onclick=()=>{App.markPaid(id);closeModal('invoiceViewModal');};
+  }
+  openModal('invoiceViewModal');
+};
+
+App.markPaid=function(id){
+  const inv=this.invoices.find(x=>x.id===id); if(!inv) return;
+  inv.status='Paid'; this.save();
+  toast('Invoice '+inv.number+' marked as paid.','success');
+  this.renderInvoices();
+};
+
+function printInvoice(){ window.print(); }
+
+/* ── PDF GENERATION ─────────────────────────────────── */
+App.buildInvoicePDF = function(invId) {
+  const id  = invId || this.activeInvoiceId;
+  const inv = this.invoices.find(x=>x.id===id);
+  if(!inv) return null;
+  const c     = this.clientById(inv.clientId);
+  const total = inv.items.reduce((s,x)=>s+x.price,0);
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'mm', format:'a4' });
+  const W = 210, margin = 20;
+
+  // ── Header band ─────────────────────────────────────
+  doc.setFillColor(42, 51, 36);           // sage-dark
+  doc.rect(0, 0, W, 42, 'F');
+
+  // Logo circle
+  doc.setFillColor(196, 150, 126);        // rose
+  doc.circle(margin + 8, 21, 8, 'F');
+  doc.setTextColor(255, 246, 230);
+  doc.setFont('times', 'italic');
+  doc.setFontSize(14);
+  doc.text('L', margin + 8, 25.5, { align:'center' });
+
+  // Brand name
+  doc.setFont('times', 'normal');
+  doc.setFontSize(18);
+  doc.setTextColor(246, 240, 230);
+  doc.text('Loveit Sanctuary', margin + 20, 19);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(180, 170, 155);
+  doc.text('sanctuary for the skin, body & soul', margin + 20, 25);
+  doc.text('2 Yellowwood Crescent, Diep River, 7800, Cape Town  ·  068 904 7292', margin + 20, 30);
+
+  // Invoice number top-right
+  doc.setFontSize(10);
+  doc.setTextColor(246, 240, 230);
+  doc.setFont('helvetica', 'bold');
+  doc.text(inv.number, W - margin, 19, { align:'right' });
+  const statusColors = { Paid:[61,110,78], Unpaid:[184,129,26], Overdue:[166,62,62] };
+  const sc = statusColors[inv.status] || [100,100,100];
+  doc.setFillColor(...sc);
+  doc.roundedRect(W - margin - 22, 22, 22, 7, 2, 2, 'F');
+  doc.setFontSize(7); doc.setTextColor(255,255,255);
+  doc.text(inv.status.toUpperCase(), W - margin - 11, 26.8, { align:'center' });
+
+  // ── Bill To / Dates ──────────────────────────────────
+  let y = 56;
+  doc.setFillColor(246, 240, 230);
+  doc.rect(margin, y - 6, (W - margin*2)/2 - 6, 26, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(155, 145, 134);
+  doc.text('BILLED TO', margin + 4, y);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.setTextColor(28, 26, 24);
+  doc.text(c ? c.first+' '+c.last : 'Client', margin + 4, y + 7);
+  if(c?.phone){ doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(107,99,85); doc.text(c.phone, margin + 4, y + 13); }
+  if(c?.email){ doc.setFontSize(8); doc.text(c.email, margin + 4, y + 18); }
+
+  const col2 = W/2 + 4;
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(155,145,134);
+  doc.text('INVOICE DATE', col2, y);
+  doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(28,26,24);
+  doc.text(this.fmtDate(inv.date), col2, y + 7);
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(155,145,134);
+  doc.text('DUE DATE', col2, y + 13);
+  doc.setFont('helvetica','normal'); doc.setFontSize(10);
+  doc.setTextColor(inv.status==='Overdue' ? 166 : 28, inv.status==='Overdue' ? 62 : 26, inv.status==='Overdue' ? 62 : 24);
+  doc.text(this.fmtDate(inv.due), col2, y + 20);
+
+  // ── Line items table ─────────────────────────────────
+  y += 36;
+  doc.setFillColor(42, 51, 36);
+  doc.rect(margin, y, W - margin*2, 9, 'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(246,240,230);
+  doc.text('DESCRIPTION', margin + 4, y + 6);
+  doc.text('AMOUNT', W - margin - 4, y + 6, { align:'right' });
+
+  y += 9;
+  inv.items.forEach((item, i) => {
+    if(i % 2 === 0) { doc.setFillColor(250,247,242); doc.rect(margin, y, W - margin*2, 9, 'F'); }
+    doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(28,26,24);
+    doc.text(item.desc, margin + 4, y + 6.5);
+    doc.setFont('helvetica','bold');
+    doc.text('R '+Number(item.price).toLocaleString('en-ZA'), W - margin - 4, y + 6.5, { align:'right' });
+    y += 9;
+  });
+
+  // Total row
+  doc.setFillColor(42, 51, 36);
+  doc.rect(margin, y + 2, W - margin*2, 12, 'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(246,240,230);
+  doc.text('TOTAL DUE', margin + 4, y + 10);
+  doc.setFontSize(13);
+  doc.text('R '+Number(total).toLocaleString('en-ZA'), W - margin - 4, y + 10, { align:'right' });
+  y += 20;
+
+  // Payment details
+  y += 8;
+  doc.setFillColor(237,229,213);
+  doc.rect(margin, y, W - margin*2, 22, 'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(61,74,53);
+  doc.text('PAYMENT DETAILS', margin + 4, y + 7);
+  doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(107,99,85);
+  doc.text('Payment accepted by EFT or cash. Please use invoice number '+inv.number+' as reference.', margin + 4, y + 13);
+  doc.text('Account details available on request · 068 904 7292 · @loveitsanctuary', margin + 4, y + 19);
+
+  // Footer
+  doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(155,145,134);
+  doc.text('Loveit Sanctuary · 2 Yellowwood Crescent, Diep River, 7800, Cape Town · loveitspa.co.za', W/2, 285, { align:'center' });
+  doc.setDrawColor(221,213,199);
+  doc.line(margin, 282, W-margin, 282);
+
+  return { doc, inv, c, total };
+};
+
+App.downloadInvoicePDF = function(invId) {
+  const result = this.buildInvoicePDF(invId);
+  if(!result) { toast('Invoice not found.','error'); return; }
+  const { doc, inv } = result;
+  doc.save(inv.number+' — Loveit Sanctuary.pdf');
+  toast('Invoice '+inv.number+' downloaded as PDF.','success');
+};
+
+App.sendInvoiceWhatsApp = function(invId) {
+  const id  = invId || this.activeInvoiceId;
+  const inv = this.invoices.find(x=>x.id===id);
+  if(!inv) { toast('Invoice not found.','error'); return; }
+  const c = this.clientById(inv.clientId);
+  if(!c?.phone) { toast('No phone number on file for this client.','error'); return; }
+
+  // 1. Generate and download the PDF automatically
+  this.downloadInvoicePDF(id);
+
+  // 2. Open WhatsApp with pre-written message after short delay (allow download)
+  const total = inv.items.reduce((s,x)=>s+x.price,0);
+  const waNum = c.phone.replace(/\D/g,'');
+  const intl  = waNum.startsWith('0') ? '27'+waNum.substring(1) : waNum;
+  const msg   = `Hi ${c.first},\n\nPlease find your invoice from Loveit Sanctuary attached.\n\n*Invoice ${inv.number}*\nTotal: R ${Number(total).toLocaleString('en-ZA')}\nDue: ${this.fmtDate(inv.due)}\n\nPayment accepted by EFT or cash — please use *${inv.number}* as your reference.\n\nThank you for choosing Loveit Sanctuary. We look forward to seeing you again.\n\n_Candice · Loveit Sanctuary · 068 904 7292_`;
+
+  setTimeout(() => {
+    window.open('https://wa.me/'+intl+'?text='+encodeURIComponent(msg), '_blank');
+  }, 600);
+
+  toast('PDF downloaded — attach it in the WhatsApp window that opens.','success');
+};
+
+function addInvoiceLine(){
+  const n=App.invoiceLineCount++;
+  const wrap=document.getElementById('invoiceLineItems');
+  const row=document.createElement('div');
+  row.className='form-row'; row.style.marginBottom='8px';
+  row.innerHTML=`<input type="text" class="form-input" placeholder="Description" id="inv_item${n}"><input type="number" class="form-input" placeholder="R 0.00" id="inv_price${n}" style="max-width:110px;" oninput="updateInvoiceTotal()">`;
+  wrap.appendChild(row);
+}
+
+function updateInvoiceTotal(){
+  let total=0;
+  for(let i=0;i<App.invoiceLineCount;i++){
+    const p=document.getElementById('inv_price'+i);
+    if(p) total+=parseFloat(p.value)||0;
+  }
+  document.getElementById('invoiceTotalDisplay').textContent='R '+total.toLocaleString('en-ZA');
+}
+
+function saveInvoice(){
+  const cid=document.getElementById('inv_client').value;
+  const date=document.getElementById('inv_date').value;
+  const due=document.getElementById('inv_due').value;
+  if(!cid){toast('Please select a client.','error');return;}
+  const items=[];
+  for(let i=0;i<App.invoiceLineCount;i++){
+    const desc=document.getElementById('inv_item'+i)?.value.trim();
+    const price=parseFloat(document.getElementById('inv_price'+i)?.value)||0;
+    if(desc&&price) items.push({desc,price});
+  }
+  if(!items.length){toast('Please add at least one line item.','error');return;}
+  const num='LS-'+String(App.invoices.length+28).padStart(4,'0');
+  App.invoices.push({id:App.uid('i'),clientId:cid,number:num,items,date,due,status:'Unpaid'});
+  App.save(); closeModal('invoiceModal');
+  App.invoiceLineCount=1;
+  document.getElementById('invoiceLineItems').innerHTML=`<div class="form-row" style="margin-bottom:8px;"><input type="text" class="form-input" placeholder="Description (e.g. Deep Tissue Massage 60min)" id="inv_item0"><input type="number" class="form-input" placeholder="R 0.00" id="inv_price0" style="max-width:110px;" oninput="updateInvoiceTotal()"></div>`;
+  document.getElementById('invoiceTotalDisplay').textContent='R 0.00';
+  toast('Invoice '+num+' created for '+App.clientName(cid)+'.','success');
+  App.renderInvoices();
+}
+
+/* ── INTAKE FORMS ────────────────────────────────────── */
+App.renderIntake=function(){
+  const tbody=document.getElementById('intakeTableBody');
+  tbody.innerHTML=this.intake.map(i=>{
+    const c=this.clientById(i.clientId);
+    return `<tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="avatar" style="width:28px;height:28px;font-size:11px;background:${this.avatarColor(i.clientId)};">${c?c.first[0]+c.last[0]:'?'}</div>
+          <div class="td-name">${c?c.first+' '+c.last:'Unknown'}</div>
+        </div>
+      </td>
+      <td>${i.type}</td>
+      <td>${this.fmtDate(i.sent)}</td>
+      <td><span class="badge badge-${i.status.toLowerCase()}">${i.status}</span></td>
+      <td>${i.sigDate?this.fmtDate(i.sigDate):'—'}</td>
+      <td>
+        ${i.status==='Pending'?`<button class="btn btn-ghost btn-xs" onclick="App.openIntakeForClient('${i.clientId}')">
+          <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+          Complete Form
+        </button>`:`<span class="text-xs text-light">
+          <svg width="11" height="11" fill="none" stroke="var(--success)" viewBox="0 0 24 24" style="display:inline;vertical-align:-1px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+          Signed & on file
+        </span>`}
+      </td>
+    </tr>`;
+  }).join('');
+};
+
+App.openIntakeForClient=function(cid){
+  const sel=document.getElementById('int_client');
+  if(sel) sel.value=cid;
+  openModal('intakeModal');
+};
+
+// Signature canvas
+App.initSignatureCanvas=function(){
+  const canvas=document.getElementById('sigCanvas');
+  if(!canvas) return;
+  this.sigCanvas=canvas; this.sigCtx=canvas.getContext('2d');
+  const resize=()=>{ canvas.width=canvas.offsetWidth; if(canvas.height<140) canvas.height=140; };
+  resize();
+  const getPos=(e)=>{
+    const r=canvas.getBoundingClientRect();
+    const src=e.touches?e.touches[0]:e;
+    return {x:(src.clientX-r.left)*(canvas.width/r.width), y:(src.clientY-r.top)*(canvas.height/r.height)};
+  };
+  canvas.addEventListener('mousedown',e=>{this.sigDrawing=true;const p=getPos(e);this.sigCtx.beginPath();this.sigCtx.moveTo(p.x,p.y);});
+  canvas.addEventListener('mousemove',e=>{if(!this.sigDrawing)return;const p=getPos(e);this.sigCtx.lineTo(p.x,p.y);this.sigCtx.strokeStyle='#1C1A18';this.sigCtx.lineWidth=1.8;this.sigCtx.lineCap='round';this.sigCtx.stroke();});
+  canvas.addEventListener('mouseup',()=>this.sigDrawing=false);
+  canvas.addEventListener('mouseleave',()=>this.sigDrawing=false);
+  canvas.addEventListener('touchstart',e=>{e.preventDefault();this.sigDrawing=true;const p=getPos(e);this.sigCtx.beginPath();this.sigCtx.moveTo(p.x,p.y);},{passive:false});
+  canvas.addEventListener('touchmove',e=>{e.preventDefault();if(!this.sigDrawing)return;const p=getPos(e);this.sigCtx.lineTo(p.x,p.y);this.sigCtx.strokeStyle='#1C1A18';this.sigCtx.lineWidth=1.8;this.sigCtx.lineCap='round';this.sigCtx.stroke();},{passive:false});
+  canvas.addEventListener('touchend',()=>this.sigDrawing=false);
+};
+
+function clearSignature(){
+  if(App.sigCtx&&App.sigCanvas) App.sigCtx.clearRect(0,0,App.sigCanvas.width,App.sigCanvas.height);
+}
+
+function saveIntakeForm(){
+  const cid=document.getElementById('int_client').value;
+  if(!cid){toast('Please select a client.','error');return;}
+  const existing=App.intake.find(i=>i.clientId===cid);
+  const sigDate=document.getElementById('int_sigdate').value||new Date().toISOString().split('T')[0];
+  if(existing){
+    existing.status='Signed'; existing.sigDate=sigDate;
+  } else {
+    App.intake.push({id:App.uid('int'),clientId:cid,type:'Health & Consent',sent:new Date().toISOString().split('T')[0],status:'Signed',sigDate});
+  }
+  App.save(); closeModal('intakeModal'); clearSignature();
+  toast('Intake form signed and saved for '+App.clientName(cid)+'.','success');
+  App.renderIntake();
+}
+
+/* ── RE-ENGAGEMENT ───────────────────────────────────── */
+App.setReengageTab=function(tab){ this.reengageTab=tab; this.renderReengage(); };
+function setReengageTab(tab,el){
+  document.querySelectorAll('.tabs .tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  App.setReengageTab(tab);
+}
+
+App.renderReengage=function(){
+  const threshold=this.reengageTab==='overdue'?60:30;
+  const lapsed=this.clients.filter(c=>this.daysSince(c.lastVisit)>=threshold)
+    .sort((a,b)=>this.daysSince(b.lastVisit)-this.daysSince(a.lastVisit));
+
+  document.getElementById('reengageHeadline').textContent=
+    `${lapsed.length} client${lapsed.length!==1?'s':''} who haven't visited in ${threshold}+ days`;
+
+  const list=document.getElementById('reengageList');
+  if(!lapsed.length){
+    list.innerHTML=`<div class="empty-state"><svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><h3>No lapsed clients</h3><p>All clients have visited recently — keep it up!</p></div>`;
+    return;
+  }
+  list.innerHTML=lapsed.map(c=>{
+    const days=this.daysSince(c.lastVisit);
+    const waNum=c.phone?.replace(/\D/g,'');
+    const msg=encodeURIComponent(`Hi ${c.first}, it's been a little while since we've seen you at Loveit Sanctuary — and we'd love to welcome you back. As a valued client, we're offering you a complimentary 15-minute add-on with your next booking. Treat yourself — you deserve it.\n\nReply here or call 068 904 7292 to book.\n\nLoveit Sanctuary · Diep River, Cape Town`);
+    return `<div class="reengage-card">
+      <div class="avatar" style="background:${this.avatarColor(c.id)};">${c.first[0]}${c.last[0]}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+          <span class="fw-500">${c.first} ${c.last}</span>
+          <span class="reengage-days">${days} days ago</span>
+        </div>
+        <div class="text-sm text-light">${c.phone||''} · Last visit: ${this.fmtDate(c.lastVisit)}</div>
+        <div class="text-sm text-mid mt-4">${c.notes||''}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        ${waNum?`<a href="https://wa.me/27${waNum.substring(1)}?text=${msg}" target="_blank"><button class="btn btn-wa btn-sm">
+          <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+          WhatsApp
+        </button></a>`:''}
+        <button class="btn btn-ghost btn-sm" onclick="App.viewClient('${c.id}')">
+          <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+          View Profile
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Message templates
+  document.getElementById('messageTemplates').innerHTML=MESSAGE_TEMPLATES.map(t=>`
+    <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border);">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+        <span class="fw-500 text-sm">${t.label}</span>
+        <span class="badge badge-${t.channel==='WhatsApp'?'new':'sage'}">${t.channel}</span>
+      </div>
+      <div style="background:var(--cream);border-radius:var(--radius-sm);padding:12px 14px;font-size:12.5px;color:var(--mid);white-space:pre-wrap;line-height:1.7;">${t.body}</div>
+    </div>
+  `).join('');
+};
+
+App.updateReengageBadge=function(){
+  const count=this.clients.filter(c=>this.daysSince(c.lastVisit)>=60).length;
+  ['reengageBadge','bottomReengageBadge'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.textContent=count;el.style.display=count?'':'none';}
+  });
+};
+
+/* ── SETTINGS ────────────────────────────────────────── */
+App.renderSettings=function(){
+  document.getElementById('workingHours').innerHTML=HOURS.map(h=>`
+    <div class="settings-row">
+      <span class="settings-label">${h.day}</span>
+      <span class="settings-value">${h.closed?'Closed':`${h.open} – ${h.close}`}</span>
+    </div>
+  `).join('');
+
+  document.getElementById('servicesTable').innerHTML=SERVICES.map(s=>`
+    <tr>
+      <td class="td-name">${s.name}</td>
+      <td class="text-sm text-light">${s.duration}</td>
+      <td class="fw-500">${s.price}</td>
+    </tr>
+  `).join('');
+
+  document.getElementById('therapistsList').innerHTML=THERAPISTS.map(t=>`
+    <div class="settings-row">
+      <div>
+        <div class="settings-label">${t.name}</div>
+        <div class="text-xs text-light mt-4">${t.specialties}</div>
+      </div>
+      <span class="settings-value">${t.role}</span>
+    </div>
+  `).join('');
+};
+
+/* ══════════════════════════════════════════════════════
+   AUTH ENGINE — Roles: owner · admin · therapist
+══════════════════════════════════════════════════════ */
+const Auth = {
+
+  ROLE_COLORS: { owner:'#B99469', admin:'#7c3aed', therapist:'#3D4A35' },
+  ROLE_LABELS: { owner:'Owner', admin:'Admin', therapist:'Therapist' },
+
+  // Simple hash (sufficient for a self-hosted single-file app)
+  hash(str) {
+    let h = 0;
+    for(let i=0;i<str.length;i++){ h = Math.imul(31,h)+str.charCodeAt(i)|0; }
+    return 'ls_'+Math.abs(h).toString(36)+'_'+(str.length*7).toString(16);
+  },
+
+  loadUsers() {
+    try { return JSON.parse(localStorage.getItem('ls_users'))||[]; } catch{ return []; }
+  },
+
+  saveUsers(users) { localStorage.setItem('ls_users', JSON.stringify(users)); },
+
+  seedDefaultUsers() {
+    let users = this.loadUsers();
+    if(!users.length) {
+      users = [
+        { id:'u1', name:'Candice',       email:'owner@loveitsanctuary.co.za', pwd:this.hash('Loveit2024!'),  role:'owner',     status:'active', mustChange:true,  created:'2025-01-01' },
+        { id:'u2', name:'Admin User',    email:'admin@loveitsanctuary.co.za', pwd:this.hash('Admin2024!'),   role:'admin',     status:'active', mustChange:true,  created:'2025-01-01' },
+        { id:'u3', name:'Lerato',        email:'lerato@loveitsanctuary.co.za',pwd:this.hash('Therapist2024!'),role:'therapist', status:'active', mustChange:true,  created:'2025-01-01' }
+      ];
+      this.saveUsers(users);
+    }
+    return users;
+  },
+
+  getSession() {
+    try { return JSON.parse(localStorage.getItem('ls_session'))||null; } catch{ return null; }
+  },
+
+  setSession(user) {
+    const expires = Date.now() + 7*24*60*60*1000; // 7 days
+    localStorage.setItem('ls_session', JSON.stringify({ userId:user.id, expires }));
+  },
+
+  clearSession() { localStorage.removeItem('ls_session'); },
+
+  currentUser() {
+    const s = this.getSession();
+    if(!s || Date.now()>s.expires) { this.clearSession(); return null; }
+    const users = this.loadUsers();
+    return users.find(u=>u.id===s.userId&&u.status==='active')||null;
+  },
+
+  login() {
+    const email    = document.getElementById('loginEmail').value.trim().toLowerCase();
+    const password = document.getElementById('loginPassword').value;
+    const errEl    = document.getElementById('loginError');
+    const errMsg   = document.getElementById('loginErrorMsg');
+    errEl.classList.remove('show');
+
+    if(!email||!password) {
+      errMsg.textContent='Please enter your email and password.';
+      errEl.classList.add('show'); return;
+    }
+    const users = this.loadUsers();
+    const user  = users.find(u=>u.email.toLowerCase()===email&&u.status==='active');
+    if(!user || user.pwd !== this.hash(password)) {
+      errMsg.textContent='Incorrect email or password.';
+      errEl.classList.add('show'); return;
+    }
+    this.setSession(user);
+    document.getElementById('loginPassword').value='';
+    errEl.classList.remove('show');
+
+    if(user.mustChange) {
+      document.getElementById('authScreen').classList.remove('visible');
+      document.getElementById('changePwdScreen').classList.add('visible');
+      return;
+    }
+    this.enterApp(user);
+  },
+
+  changePassword() {
+    const p1 = document.getElementById('newPwd1').value;
+    const p2 = document.getElementById('newPwd2').value;
+    const errEl  = document.getElementById('changePwdError');
+    const errMsg = document.getElementById('changePwdErrorMsg');
+    errEl.classList.remove('show');
+    if(p1.length<6){ errMsg.textContent='Password must be at least 6 characters.'; errEl.classList.add('show'); return; }
+    if(p1!==p2){ errMsg.textContent='Passwords do not match.'; errEl.classList.add('show'); return; }
+    const user = this.currentUser();
+    if(!user) { this.showLogin(); return; }
+    const users = this.loadUsers();
+    const u = users.find(x=>x.id===user.id);
+    u.pwd=this.hash(p1); u.mustChange=false;
+    this.saveUsers(users);
+    document.getElementById('changePwdScreen').classList.remove('visible');
+    document.getElementById('newPwd1').value='';
+    document.getElementById('newPwd2').value='';
+    this.enterApp(u);
+    toast('Password updated successfully.','success');
+  },
+
+  saveNewPassword() {
+    const current = document.getElementById('cp_current').value;
+    const p1      = document.getElementById('cp_new1').value;
+    const p2      = document.getElementById('cp_new2').value;
+    const errEl   = document.getElementById('inAppPwdError');
+    const errMsg  = document.getElementById('inAppPwdErrorMsg');
+    errEl.classList.remove('show');
+    const user  = this.currentUser();
+    const users = this.loadUsers();
+    const u     = users.find(x=>x.id===user.id);
+    if(u.pwd!==this.hash(current)){ errMsg.textContent='Current password is incorrect.'; errEl.classList.add('show'); return; }
+    if(p1.length<6){ errMsg.textContent='New password must be at least 6 characters.'; errEl.classList.add('show'); return; }
+    if(p1!==p2){ errMsg.textContent='Passwords do not match.'; errEl.classList.add('show'); return; }
+    u.pwd=this.hash(p1); u.mustChange=false;
+    this.saveUsers(users);
+    closeModal('changePwdModal');
+    ['cp_current','cp_new1','cp_new2'].forEach(id=>document.getElementById(id).value='');
+    toast('Password changed successfully.','success');
+  },
+
+  logout() {
+    this.clearSession();
+    document.getElementById('authScreen').classList.add('visible');
+    document.querySelector('.app-shell').style.display='none';
+    document.querySelector('.mobile-topbar').style.display='none';
+    document.querySelector('.bottom-nav').style.display='none';
+    document.getElementById('loginEmail').value='';
+    document.getElementById('loginPassword').value='';
+  },
+
+  enterApp(user) {
+    document.getElementById('authScreen').classList.remove('visible');
+    document.getElementById('changePwdScreen').classList.remove('visible');
+    document.querySelector('.app-shell').style.display='flex';
+    document.querySelector('.mobile-topbar').style.display='flex';
+    // mobile bottom nav
+    if(window.innerWidth<=700) document.querySelector('.bottom-nav').style.display='block';
+    this.applyRole(user);
+    App.init();
+  },
+
+  applyRole(user) {
+    const role = user.role;
+    // Sidebar avatar + name
+    const initials = user.name.split(' ').map(x=>x[0]).join('').substring(0,2).toUpperCase();
+    document.getElementById('sidebarAvatar').textContent = initials;
+    document.getElementById('sidebarAvatar').style.background = this.ROLE_COLORS[role]||'var(--sage)';
+    document.getElementById('sidebarName').textContent = user.name;
+    const badge = document.getElementById('sidebarRoleBadge');
+    const roleStyles = {
+      owner:     'background:#fef3e2;color:#B99469;',
+      admin:     'background:#ede9fe;color:#7c3aed;',
+      therapist: 'background:#e8f0e5;color:#3D4A35;'
+    };
+    badge.setAttribute('style', (roleStyles[role]||'')+';font-size:9px;font-weight:700;padding:1px 7px;border-radius:99px;text-transform:uppercase;letter-spacing:.4px;');
+    badge.textContent = this.ROLE_LABELS[role]||role;
+
+    // Show/hide nav items by role
+    document.querySelectorAll('.owner-only').forEach(el => {
+      el.style.display = role==='owner' ? 'flex' : 'none';
+    });
+
+    // Therapist: hide billing/admin pages from nav
+    const therapistHidden = ['memberships','invoices','reengage','settings','users'];
+    const adminHidden     = ['users'];
+    document.querySelectorAll('[data-page]').forEach(el => {
+      const pg = el.dataset.page;
+      if(role==='therapist' && therapistHidden.includes(pg)) {
+        el.style.display='none';
+      } else if(role==='admin' && adminHidden.includes(pg)) {
+        el.style.display='none';
+      }
+    });
+    // Re-show owner-only after above loop
+    if(role==='owner') {
+      document.querySelectorAll('.owner-only').forEach(el=>el.style.display='flex');
+    }
+  },
+
+  showLogin() {
+    document.querySelector('.app-shell').style.display='none';
+    document.querySelector('.mobile-topbar').style.display='none';
+    document.querySelector('.bottom-nav').style.display='none';
+    document.getElementById('authScreen').classList.add('visible');
+  },
+
+  /* ── USER MANAGEMENT ─────────────────────────────── */
+  renderUsers() {
+    const currentUser = this.currentUser();
+    const users = this.loadUsers();
+    // Owner sees all; Admin sees non-owner only; Therapist blocked
+    let visible = users;
+    if(currentUser?.role==='admin') visible = users.filter(u=>u.role!=='owner');
+
+    const grid = document.getElementById('usersGrid');
+    if(!grid) return;
+    grid.innerHTML = visible.map(u => {
+      const isSelf = u.id===currentUser?.id;
+      const roleColor = this.ROLE_COLORS[u.role]||'#999';
+      const roleBg = u.role==='owner'?'#fef3e2':u.role==='admin'?'#ede9fe':'#e8f0e5';
+      const initials = u.name.split(' ').map(x=>x[0]).join('').substring(0,2).toUpperCase();
+      return `<div class="user-card" style="position:relative;">
+        <div style="position:absolute;left:0;top:0;bottom:0;width:3px;background:${roleColor};border-radius:3px 0 0 3px;"></div>
+        <div class="user-avatar-lg" style="background:${roleColor};">${initials}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+            <span class="fw-500">${u.name}</span>
+            <span style="font-size:9px;font-weight:700;padding:2px 8px;border-radius:99px;text-transform:uppercase;letter-spacing:.4px;background:${roleBg};color:${roleColor};">${this.ROLE_LABELS[u.role]||u.role}</span>
+            ${isSelf?'<span class="badge badge-sage" style="font-size:9px;">You</span>':''}
+            ${u.mustChange?'<span class="badge badge-pending" style="font-size:9px;">Must change password</span>':''}
+          </div>
+          <div class="text-sm text-light">${u.email}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="badge badge-${u.status==='active'?'active':'cancelled'}">${u.status==='active'?'Active':'Inactive'}</span>
+          ${!isSelf?`
+            <button class="btn btn-ghost btn-xs" onclick="Auth.editUser('${u.id}')">
+              <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>Edit
+            </button>
+            ${u.role!=='owner'?`<button class="btn btn-ghost btn-xs" onclick="Auth.toggleUserStatus('${u.id}')" style="${u.status==='active'?'color:var(--warning);border-color:var(--warning);':'color:var(--success);border-color:var(--success);'}">
+              <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="${u.status==='active'?'M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636':'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'}"/></svg>
+              ${u.status==='active'?'Deactivate':'Activate'}
+            </button>`:''}
+          `:`<button class="btn btn-ghost btn-xs" onclick="openModal('changePwdModal')">
+            <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+            Change Password
+          </button>`}
+        </div>
+      </div>`;
+    }).join('');
+  },
+
+  editUser(id) {
+    const users = this.loadUsers();
+    const u = users.find(x=>x.id===id);
+    if(!u) return;
+    document.getElementById('userModalTitle').textContent='Edit User';
+    document.getElementById('um_id').value=u.id;
+    document.getElementById('um_name').value=u.name;
+    document.getElementById('um_email').value=u.email;
+    document.getElementById('um_role').value=u.role;
+    document.getElementById('um_status').value=u.status;
+    document.getElementById('um_pwd').value='';
+    document.getElementById('um_pwdSection').querySelector('label .form-label span').textContent='(leave blank to keep current)';
+    openModal('userModal');
+  },
+
+  saveUser() {
+    const id     = document.getElementById('um_id').value;
+    const name   = document.getElementById('um_name').value.trim();
+    const email  = document.getElementById('um_email').value.trim().toLowerCase();
+    const role   = document.getElementById('um_role').value;
+    const status = document.getElementById('um_status').value;
+    const pwd    = document.getElementById('um_pwd').value;
+    if(!name||!email){ toast('Name and email are required.','error'); return; }
+    const users = this.loadUsers();
+    const currentUser = this.currentUser();
+    // Prevent removing own owner role
+    if(id===currentUser?.id && role!=='owner' && currentUser?.role==='owner'){
+      toast('You cannot change your own role.','error'); return;
+    }
+    if(id) {
+      // Edit
+      const u = users.find(x=>x.id===id);
+      if(!u){ toast('User not found.','error'); return; }
+      u.name=name; u.email=email; u.role=role; u.status=status;
+      if(pwd.length>=6) { u.pwd=this.hash(pwd); u.mustChange=true; }
+      else if(pwd.length>0&&pwd.length<6){ toast('Password must be at least 6 characters.','error'); return; }
+    } else {
+      // Create
+      if(pwd.length<6){ toast('Password must be at least 6 characters.','error'); return; }
+      if(users.find(x=>x.email.toLowerCase()===email)){ toast('An account with this email already exists.','error'); return; }
+      users.push({ id:'u'+Date.now().toString(36), name, email, pwd:this.hash(pwd), role, status, mustChange:true, created:new Date().toISOString().split('T')[0] });
+    }
+    this.saveUsers(users);
+    closeModal('userModal');
+    document.getElementById('um_id').value='';
+    document.getElementById('um_pwd').value='';
+    toast((id?'User updated':'New user created')+' — '+name+'.','success');
+    this.renderUsers();
+  },
+
+  toggleUserStatus(id) {
+    const users = this.loadUsers();
+    const u = users.find(x=>x.id===id);
+    if(!u || u.role==='owner') return;
+    u.status = u.status==='active'?'inactive':'active';
+    this.saveUsers(users);
+    toast(u.name+' '+u.status+'.','success');
+    this.renderUsers();
+  },
+
+  updateRoleUI() {
+    const role = document.getElementById('um_role').value;
+    // Could add role-specific UI hints here
+  },
+
+  togglePwd(inputId, iconEl) {
+    const inp = document.getElementById(inputId);
+    if(!inp) return;
+    if(inp.type==='password') {
+      inp.type='text';
+      iconEl.innerHTML=`<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>`;
+    } else {
+      inp.type='password';
+      iconEl.innerHTML=`<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>`;
+    }
+  },
+
+  /* ── BOOT ─────────────────────────────────────────── */
+  boot() {
+    this.seedDefaultUsers();
+    // Hide app until authenticated
+    document.querySelector('.app-shell').style.display='none';
+    document.querySelector('.mobile-topbar').style.display='none';
+    document.querySelector('.bottom-nav').style.display='none';
+
+    const user = this.currentUser();
+    if(user) {
+      if(user.mustChange) {
+        document.getElementById('changePwdScreen').classList.add('visible');
+      } else {
+        this.enterApp(user);
+        return;
+      }
+    } else {
+      this.showLogin();
+    }
+  }
+};
+
+// Hook users page render into App navigation
+const _origNavigate = App.navigate.bind(App);
+App.navigate = function(page) {
+  _origNavigate(page);
+  if(page==='users') Auth.renderUsers();
+};
+
+/* ── INIT ─────────────────────────────────────────────── */
+Auth.boot();
+</script>
+</body>
+</html>
