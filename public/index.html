@@ -170,6 +170,109 @@ svg { display: block; flex-shrink: 0; }
 .sidebar-footer-info { flex: 1; min-width: 0; }
 .sidebar-footer-name { font-size: 12px; color: rgba(255,255,255,.85); font-weight: 500; }
 .sidebar-footer-role { font-size: 10px; color: rgba(255,255,255,.35); }
+.sidebar-footer-btn {
+  cursor: pointer;
+  transition: var(--transition);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+}
+.sidebar-footer-btn:hover { background: rgba(255,255,255,.08); }
+
+/* ── MY ACCOUNT PANEL ──────────────────────────────────── */
+.acct-overlay {
+  position: fixed; inset: 0; z-index: 800;
+  background: rgba(28,26,24,.45);
+  opacity: 0; pointer-events: none;
+  transition: opacity .22s ease;
+}
+.acct-overlay.visible { opacity: 1; pointer-events: all; }
+.acct-panel {
+  position: fixed; left: 0; bottom: 0;
+  width: var(--sidebar-w);
+  max-height: 88vh;
+  background: var(--white);
+  border-radius: 0 16px 0 0;
+  box-shadow: 4px -4px 32px rgba(28,26,24,.18);
+  z-index: 801;
+  display: flex; flex-direction: column;
+  transform: translateY(100%);
+  transition: transform .26s cubic-bezier(.4,0,.2,1);
+  overflow: hidden;
+}
+.acct-panel.visible { transform: translateY(0); }
+.acct-panel-header {
+  background: var(--sage-dark);
+  padding: 18px 18px 14px;
+  display: flex; align-items: center; gap: 12px;
+  flex-shrink: 0;
+}
+.acct-panel-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 700; color: var(--white);
+  flex-shrink: 0;
+}
+.acct-panel-name { font-size: 13px; font-weight: 600; color: rgba(255,255,255,.9); }
+.acct-panel-email { font-size: 10px; color: rgba(255,255,255,.4); margin-top: 1px; word-break: break-all; }
+.acct-panel-body { overflow-y: auto; flex: 1; padding: 0 0 12px; }
+.acct-section {
+  padding: 14px 18px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.acct-section:last-child { border-bottom: none; }
+.acct-section-title {
+  font-size: 10px; font-weight: 700; letter-spacing: .6px;
+  text-transform: uppercase; color: var(--mid);
+  display: flex; align-items: center; gap: 7px;
+  margin-bottom: 10px;
+}
+.acct-section-title svg { color: var(--sage); }
+.acct-desc { font-size: 11px; color: var(--light); margin-bottom: 12px; line-height: 1.5; }
+.acct-action-btn {
+  display: flex; align-items: center; gap: 8px;
+  width: 100%; padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12px; font-weight: 500;
+  cursor: pointer; border: none; background: none;
+  transition: var(--transition);
+  color: var(--dark);
+}
+.acct-action-btn:hover { background: var(--sage-pale); }
+.acct-action-btn svg { color: var(--sage); flex-shrink: 0; }
+.acct-action-btn.danger { color: var(--error); }
+.acct-action-btn.danger:hover { background: #fef2f2; }
+.acct-action-btn.danger svg { color: var(--error); }
+.acct-logout-btn {
+  display: flex; align-items: center; gap: 8px;
+  width: calc(100% - 36px); margin: 4px 18px;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12px; font-weight: 600;
+  cursor: pointer; border: 1px solid var(--border);
+  background: var(--cream);
+  color: var(--dark); transition: var(--transition);
+}
+.acct-logout-btn:hover { background: var(--cream-dark); }
+.acct-backup-counts {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 6px; margin-bottom: 12px;
+}
+.acct-backup-count {
+  background: var(--sage-pale);
+  border-radius: var(--radius-sm);
+  padding: 7px 10px;
+  text-align: center;
+}
+.acct-backup-count-num { font-size: 15px; font-weight: 700; color: var(--sage); font-family: 'Cormorant Garamond', serif; }
+.acct-backup-count-label { font-size: 9px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: var(--mid); margin-top: 1px; }
+.acct-pwd-fields { display: flex; flex-direction: column; gap: 8px; }
+.acct-pwd-field { position: relative; }
+.acct-pwd-field input { font-size: 12px; padding: 8px 32px 8px 10px; }
+.acct-pwd-field svg { position: absolute; right: 9px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--light); }
+.acct-error { display: none; background: #fef2f2; border: 1px solid #fca5a5; border-radius: var(--radius-sm); padding: 7px 10px; font-size: 11px; color: var(--error); margin-top: 6px; }
+.acct-error.show { display: block; }
+.danger-zone-box { background: #fef2f2; border: 1px solid #fca5a5; border-radius: var(--radius-sm); padding: 10px 12px; }
+.danger-zone-box p { font-size: 11px; color: #7f1d1d; margin-bottom: 8px; line-height: 1.5; }
 
 /* MAIN CONTENT */
 .main-content {
@@ -921,7 +1024,7 @@ canvas#sigCanvas { display: block; width: 100%; touch-action: none; }
   </nav>
 
   <div class="sidebar-footer" style="flex-direction:column;gap:8px;align-items:stretch;">
-    <div style="display:flex;align-items:center;gap:10px;">
+    <div style="display:flex;align-items:center;gap:10px;cursor:pointer;border-radius:8px;padding:4px;transition:background .15s;" onclick="AccountPanel.open()" onmouseover="this.style.background='rgba(255,255,255,.06)'" onmouseout="this.style.background='transparent'" title="My Account">
       <div class="sidebar-footer-avatar" id="sidebarAvatar">C</div>
       <div class="sidebar-footer-info" style="flex:1;min-width:0;">
         <div class="sidebar-footer-name" id="sidebarName">Candice</div>
@@ -929,9 +1032,9 @@ canvas#sigCanvas { display: block; width: 100%; touch-action: none; }
           <span id="sidebarRoleBadge" style="font-size:9px;font-weight:700;padding:1px 7px;border-radius:99px;text-transform:uppercase;letter-spacing:.4px;background:#fef3e2;color:#B99469;">Owner</span>
         </div>
       </div>
-      <button onclick="Auth.logout()" title="Sign out" style="color:rgba(255,255,255,.4);padding:4px;border-radius:4px;transition:color .15s;" onmouseover="this.style.color='rgba(255,255,255,.85)'" onmouseout="this.style.color='rgba(255,255,255,.4)'">
-        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-      </button>
+      <div style="color:rgba(255,255,255,.35);padding:4px;" title="My Account">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </div>
     </div>
   </div>
 </aside>
@@ -2008,6 +2111,101 @@ canvas#sigCanvas { display: block; width: 100%; touch-action: none; }
 
 <!-- TOAST CONTAINER -->
 <div class="toast-container" id="toastContainer"></div>
+
+<!-- ── MY ACCOUNT PANEL ── -->
+<div class="acct-overlay" id="acctOverlay" onclick="AccountPanel.close()"></div>
+<div class="acct-panel" id="acctPanel">
+  <!-- Header -->
+  <div class="acct-panel-header">
+    <div class="acct-panel-avatar" id="acctAvatar">C</div>
+    <div style="flex:1;min-width:0;">
+      <div class="acct-panel-name" id="acctName">Candice</div>
+      <div class="acct-panel-email" id="acctEmail">owner@loveitsanctuary.co.za</div>
+      <div style="margin-top:5px;">
+        <span id="acctRoleBadge" style="font-size:9px;font-weight:700;padding:2px 8px;border-radius:99px;text-transform:uppercase;letter-spacing:.4px;background:#fef3e2;color:#B99469;">Owner</span>
+      </div>
+    </div>
+    <button onclick="AccountPanel.close()" style="color:rgba(255,255,255,.35);padding:4px;" title="Close">
+      <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+    </button>
+  </div>
+
+  <div class="acct-panel-body">
+
+    <!-- Logout -->
+    <div class="acct-section" style="padding-bottom:12px;">
+      <p class="acct-desc" style="margin-bottom:0;">Manage your personal login, password &amp; backups</p>
+    </div>
+
+    <div style="padding:10px 18px 0;">
+      <button class="acct-logout-btn" onclick="AccountPanel.logout()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        Logout
+      </button>
+    </div>
+
+    <!-- Change Password -->
+    <div class="acct-section">
+      <div class="acct-section-title">
+        <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+        Change Password
+      </div>
+      <p class="acct-desc">Your password is private — only you can change it</p>
+      <div class="acct-pwd-fields">
+        <div class="acct-pwd-field">
+          <input type="password" class="form-input" id="ap_current" placeholder="Current password">
+          <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24" onclick="Auth.togglePwd('ap_current',this)"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+        </div>
+        <div class="acct-pwd-field">
+          <input type="password" class="form-input" id="ap_new1" placeholder="New password">
+          <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24" onclick="Auth.togglePwd('ap_new1',this)"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+        </div>
+        <div class="acct-pwd-field">
+          <input type="password" class="form-input" id="ap_new2" placeholder="Confirm new password">
+          <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24" onclick="Auth.togglePwd('ap_new2',this)"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+        </div>
+      </div>
+      <div class="acct-error" id="apPwdError"><span id="apPwdErrorMsg"></span></div>
+      <button class="btn btn-primary btn-sm w-full" style="margin-top:10px;justify-content:center;" onclick="AccountPanel.changePassword()">Update Password</button>
+    </div>
+
+    <!-- Backup & Restore -->
+    <div class="acct-section">
+      <div class="acct-section-title">
+        <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3V7M4 7c0-2 1-3 3-3h10c2 0 3 1 3 3M4 7h16M10 11h4"/></svg>
+        Backup &amp; Restore
+      </div>
+      <p class="acct-desc">Download a full backup or restore records from a backup file</p>
+      <div class="acct-backup-counts" id="acctBackupCounts"></div>
+      <button class="acct-action-btn" onclick="AccountPanel.downloadBackup()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+        Download Full Backup
+      </button>
+      <p style="font-size:10px;color:var(--light);margin:2px 12px 8px;line-height:1.4;" id="acctBackupLabel">All records as a single JSON file. Save to iCloud, USB, or email yourself.</p>
+      <button class="acct-action-btn" onclick="document.getElementById('acctRestoreFile').click()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+        Restore from Backup
+      </button>
+      <p style="font-size:10px;color:var(--light);margin:2px 12px 8px;line-height:1.4;">Upload a .json backup file. Missing records are restored — existing data is never changed.</p>
+      <input type="file" id="acctRestoreFile" accept=".json" style="display:none" onchange="AccountPanel.restoreBackup(this)">
+    </div>
+
+    <!-- Danger Zone -->
+    <div class="acct-section">
+      <div class="acct-section-title" style="color:var(--error);">
+        <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--error);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        Danger Zone
+      </div>
+      <div class="danger-zone-box">
+        <p>Permanently delete all clients, bookings, memberships, invoices &amp; intake forms. Login accounts are kept.</p>
+        <button class="btn btn-sm" style="background:#dc2626;color:#fff;border:none;cursor:pointer;justify-content:center;width:100%;" onclick="AccountPanel.confirmPurge()">
+          Purge All Records
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /acct-panel-body -->
+</div><!-- /acct-panel -->
 
 <script>
 /* ═══════════════════════════════════════════════════════
@@ -3812,6 +4010,156 @@ const _origNavigate = App.navigate.bind(App);
 App.navigate = function(page) {
   _origNavigate(page);
   if(page==='users') Auth.renderUsers();
+};
+
+/* ── MY ACCOUNT PANEL ────────────────────────────────── */
+const AccountPanel = {
+  open() {
+    const user = Auth.currentUser();
+    if(!user) return;
+    // Populate header
+    const initials = user.name.split(' ').map(x=>x[0]).join('').substring(0,2).toUpperCase();
+    const roleColor = Auth.ROLE_COLORS[user.role] || 'var(--sage)';
+    document.getElementById('acctAvatar').textContent = initials;
+    document.getElementById('acctAvatar').style.background = roleColor;
+    document.getElementById('acctName').textContent = user.name;
+    document.getElementById('acctEmail').textContent = user.email;
+    const badge = document.getElementById('acctRoleBadge');
+    const badgeStyles = {
+      owner:     { bg:'#fef3e2', color:'#B99469', label:'Owner' },
+      admin:     { bg:'#ede9fe', color:'#7c3aed', label:'Admin' },
+      therapist: { bg:'#f0fdf4', color:'#3D4A35', label:'Therapist' }
+    };
+    const s = badgeStyles[user.role] || badgeStyles.therapist;
+    badge.textContent = s.label;
+    badge.style.background = s.bg;
+    badge.style.color = s.color;
+    // Backup counts
+    this.refreshCounts();
+    // Clear pwd fields
+    ['ap_current','ap_new1','ap_new2'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+    document.getElementById('apPwdError').classList.remove('show');
+    // Show
+    document.getElementById('acctOverlay').classList.add('visible');
+    document.getElementById('acctPanel').classList.add('visible');
+  },
+
+  close() {
+    document.getElementById('acctOverlay').classList.remove('visible');
+    document.getElementById('acctPanel').classList.remove('visible');
+  },
+
+  logout() {
+    this.close();
+    setTimeout(() => Auth.logout(), 220);
+  },
+
+  refreshCounts() {
+    const counts = [
+      { label:'Clients',     val: App.clients.length },
+      { label:'Bookings',    val: App.bookings.length },
+      { label:'Memberships', val: App.memberships.length },
+      { label:'Invoices',    val: App.invoices.length },
+      { label:'Intake',      val: App.intake.length },
+      { label:'Services',    val: (JSON.parse(localStorage.getItem('ls_services')||'null')||[]).length }
+    ];
+    const total = counts.slice(0,5).reduce((a,c)=>a+c.val,0);
+    document.getElementById('acctBackupLabel').textContent =
+      `All ${total} records as a single JSON file. Save to iCloud, USB, or email yourself.`;
+    document.getElementById('acctBackupCounts').innerHTML = counts.map(c=>
+      `<div class="acct-backup-count">
+         <div class="acct-backup-count-num">${c.val}</div>
+         <div class="acct-backup-count-label">${c.label}</div>
+       </div>`
+    ).join('');
+  },
+
+  changePassword() {
+    const current = document.getElementById('ap_current').value;
+    const p1      = document.getElementById('ap_new1').value;
+    const p2      = document.getElementById('ap_new2').value;
+    const errEl   = document.getElementById('apPwdError');
+    const errMsg  = document.getElementById('apPwdErrorMsg');
+    errEl.classList.remove('show');
+    const user  = Auth.currentUser();
+    const users = Auth.loadUsers();
+    const u     = users.find(x=>x.id===user.id);
+    if(u.pwd !== Auth.hash(current)) { errMsg.textContent='Current password is incorrect.'; errEl.classList.add('show'); return; }
+    if(p1.length<6) { errMsg.textContent='New password must be at least 6 characters.'; errEl.classList.add('show'); return; }
+    if(p1!==p2) { errMsg.textContent='Passwords do not match.'; errEl.classList.add('show'); return; }
+    u.pwd = Auth.hash(p1); u.mustChange = false;
+    Auth.saveUsers(users);
+    ['ap_current','ap_new1','ap_new2'].forEach(id => document.getElementById(id).value='');
+    toast('Password updated successfully.','success');
+  },
+
+  downloadBackup() {
+    const data = {
+      version: '1.0',
+      exported: new Date().toISOString(),
+      system: 'Loveit Sanctuary',
+      clients:     App.clients,
+      bookings:    App.bookings,
+      memberships: App.memberships,
+      invoices:    App.invoices,
+      intake:      App.intake
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    const date = new Date().toISOString().split('T')[0];
+    a.href     = url;
+    a.download = `loveit-sanctuary-backup-${date}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast('Backup downloaded successfully.','success');
+  },
+
+  restoreBackup(input) {
+    const file = input.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const data = JSON.parse(e.target.result);
+        if(!data.clients && !data.bookings) { toast('Invalid backup file.','error'); return; }
+        let restored = 0;
+        const merge = (arr, existing, key='id') => {
+          const ids = new Set(existing.map(x=>x[key]));
+          const newItems = (arr||[]).filter(x=>!ids.has(x[key]));
+          restored += newItems.length;
+          return [...existing, ...newItems];
+        };
+        App.clients     = merge(data.clients,     App.clients);
+        App.bookings    = merge(data.bookings,    App.bookings);
+        App.memberships = merge(data.memberships, App.memberships);
+        App.invoices    = merge(data.invoices,    App.invoices);
+        App.intake      = merge(data.intake,      App.intake);
+        App.save();
+        this.refreshCounts();
+        toast(`Restore complete — ${restored} new record${restored===1?'':'s'} added.`, 'success');
+      } catch(err) {
+        toast('Could not read backup file — please check the format.','error');
+      }
+    };
+    reader.readAsText(file);
+    input.value = '';
+  },
+
+  confirmPurge() {
+    if(!confirm('PURGE ALL RECORDS?\n\nThis will permanently delete all clients, bookings, memberships, invoices, and intake forms.\n\nThis action CANNOT be undone. Login accounts are kept.\n\nType OK to confirm.')) return;
+    App.clients     = [];
+    App.bookings    = [];
+    App.memberships = [];
+    App.invoices    = [];
+    App.intake      = [];
+    App.save();
+    this.refreshCounts();
+    App.init();
+    toast('All records purged.','warning');
+  }
 };
 
 /* ── INIT ─────────────────────────────────────────────── */
