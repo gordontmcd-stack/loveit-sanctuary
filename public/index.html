@@ -275,6 +275,39 @@ svg { display: block; flex-shrink: 0; }
 .danger-zone-box p { font-size: 11px; color: #7f1d1d; margin-bottom: 8px; line-height: 1.5; }
 
 /* iCloud Backup UI */
+/* Restore drop zone */
+.restore-dropzone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 20px 14px;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+  background: var(--cream);
+}
+.restore-dropzone:hover,
+.restore-dropzone.drag-over {
+  border-color: var(--sage);
+  background: var(--sage-pale);
+}
+.restore-dropzone.drag-over { transform: scale(1.01); }
+
+/* Restore preview card */
+.restore-preview {
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  border-radius: var(--radius);
+  padding: 12px;
+  margin-top: 10px;
+}
+.restore-preview-header {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 4px;
+}
+.restore-preview-actions {
+  display: flex; gap: 6px; margin-top: 10px;
+}
+
 .icloud-setup-box {
   background: var(--sage-pale);
   border: 1px dashed var(--sage);
@@ -2202,25 +2235,58 @@ canvas#sigCanvas { display: block; width: 100%; touch-action: none; }
       <button class="btn btn-primary btn-sm w-full" style="margin-top:10px;justify-content:center;" onclick="AccountPanel.changePassword()">Update Password</button>
     </div>
 
-    <!-- Backup & Restore -->
+    <!-- Backup & Download -->
     <div class="acct-section">
       <div class="acct-section-title">
         <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3V7M4 7c0-2 1-3 3-3h10c2 0 3 1 3 3M4 7h16M10 11h4"/></svg>
-        Backup &amp; Restore
+        Backup &amp; Download
       </div>
-      <p class="acct-desc">Download a full backup or restore records from a backup file</p>
+      <p class="acct-desc">Download a full backup of all records. Save to iCloud, USB, or email yourself.</p>
       <div class="acct-backup-counts" id="acctBackupCounts"></div>
       <button class="acct-action-btn" onclick="AccountPanel.downloadBackup()">
         <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
         Download Full Backup
       </button>
-      <p style="font-size:10px;color:var(--light);margin:2px 12px 8px;line-height:1.4;" id="acctBackupLabel">All records as a single JSON file. Save to iCloud, USB, or email yourself.</p>
-      <button class="acct-action-btn" onclick="document.getElementById('acctRestoreFile').click()">
-        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-        Restore from Backup
-      </button>
-      <p style="font-size:10px;color:var(--light);margin:2px 12px 8px;line-height:1.4;">Upload a .json backup file. Missing records are restored — existing data is never changed.</p>
-      <input type="file" id="acctRestoreFile" accept=".json" style="display:none" onchange="AccountPanel.restoreBackup(this)">
+      <p style="font-size:10px;color:var(--light);margin:2px 12px 4px;line-height:1.4;" id="acctBackupLabel">All records as a single JSON file.</p>
+    </div>
+
+    <!-- Restore from Backup File -->
+    <div class="acct-section">
+      <div class="acct-section-title" style="color:var(--sage);">
+        <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+        Restore from Backup File
+      </div>
+      <p class="acct-desc">Upload any <code style="background:var(--sage-pale);padding:1px 5px;border-radius:3px;font-size:10px;">.json</code> backup file to fully restore all records, settings &amp; login accounts — even if all data was lost.</p>
+
+      <!-- Drop zone -->
+      <div class="restore-dropzone" id="restoreDropzone"
+        onclick="document.getElementById('acctRestoreFile').click()"
+        ondragover="event.preventDefault();this.classList.add('drag-over')"
+        ondragleave="this.classList.remove('drag-over')"
+        ondrop="event.preventDefault();this.classList.remove('drag-over');AccountPanel.handleRestoreDrop(event)">
+        <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:var(--sage);margin:0 auto 8px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+        <p style="font-size:12px;font-weight:600;color:var(--dark);margin-bottom:3px;">Drop backup file here</p>
+        <p style="font-size:10px;color:var(--light);">or click to browse your files</p>
+        <input type="file" id="acctRestoreFile" accept=".json" style="display:none" onchange="AccountPanel.previewRestore(this)">
+      </div>
+
+      <!-- Preview card (shown after file is selected) -->
+      <div class="restore-preview" id="restorePreview" style="display:none;">
+        <div class="restore-preview-header">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:#16a34a;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          <span id="restoreFileName" style="flex:1;font-size:11px;font-weight:600;color:var(--dark);"></span>
+          <button onclick="AccountPanel.clearRestore()" style="color:var(--light);font-size:16px;line-height:1;padding:0 2px;">×</button>
+        </div>
+        <div id="restorePreviewCounts" class="acct-backup-counts" style="margin:8px 0 0;"></div>
+        <div id="restorePreviewMeta" style="font-size:10px;color:var(--mid);margin-top:6px;line-height:1.6;"></div>
+        <div class="restore-preview-actions">
+          <button class="btn btn-primary btn-sm" style="flex:1;justify-content:center;background:#16a34a;border-color:#16a34a;" onclick="AccountPanel.confirmRestore()">
+            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            Restore Everything
+          </button>
+          <button class="btn btn-ghost btn-sm" onclick="AccountPanel.clearRestore()">Cancel</button>
+        </div>
+      </div>
     </div>
 
     <!-- iCloud Auto-Backup -->
@@ -4520,35 +4586,98 @@ const AccountPanel = {
     toast('Backup downloaded successfully.','success');
   },
 
-  restoreBackup(input) {
+  _pendingRestoreData: null,
+
+  /* Read file → show preview card before committing restore */
+  previewRestore(input) {
     const file = input.files[0];
     if(!file) return;
     const reader = new FileReader();
     reader.onload = e => {
       try {
         const data = JSON.parse(e.target.result);
-        if(!data.clients && !data.bookings) { toast('Invalid backup file.','error'); return; }
-        let restored = 0;
-        const merge = (arr, existing, key='id') => {
-          const ids = new Set(existing.map(x=>x[key]));
-          const newItems = (arr||[]).filter(x=>!ids.has(x[key]));
-          restored += newItems.length;
-          return [...existing, ...newItems];
-        };
-        App.clients     = merge(data.clients,     App.clients);
-        App.bookings    = merge(data.bookings,    App.bookings);
-        App.memberships = merge(data.memberships, App.memberships);
-        App.invoices    = merge(data.invoices,    App.invoices);
-        App.intake      = merge(data.intake,      App.intake);
-        App.save();
-        this.refreshCounts();
-        toast(`Restore complete — ${restored} new record${restored===1?'':'s'} added.`, 'success');
-      } catch(err) {
-        toast('Could not read backup file — please check the format.','error');
+        if(!data.clients && !data.bookings && !data._schema) {
+          toast('This does not look like a valid Loveit Sanctuary backup file.','error');
+          return;
+        }
+        this._pendingRestoreData = { data, filename: file.name };
+        this._showRestorePreview(data, file.name);
+      } catch {
+        toast('Could not read the file — it may be corrupted or not a valid JSON backup.','error');
       }
     };
     reader.readAsText(file);
     input.value = '';
+  },
+
+  /* Handle drag-and-drop onto the drop zone */
+  handleRestoreDrop(event) {
+    const file = event.dataTransfer.files[0];
+    if(!file) return;
+    if(!file.name.endsWith('.json')) { toast('Please drop a .json backup file.','error'); return; }
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const data = JSON.parse(e.target.result);
+        if(!data.clients && !data.bookings && !data._schema) {
+          toast('This does not look like a valid Loveit Sanctuary backup file.','error');
+          return;
+        }
+        this._pendingRestoreData = { data, filename: file.name };
+        this._showRestorePreview(data, file.name);
+      } catch {
+        toast('Could not read the file — it may be corrupted or not a valid JSON backup.','error');
+      }
+    };
+    reader.readAsText(file);
+  },
+
+  /* Render the preview card with counts from the backup */
+  _showRestorePreview(data, filename) {
+    document.getElementById('restoreDropzone').style.display  = 'none';
+    document.getElementById('restorePreview').style.display   = 'block';
+    document.getElementById('restoreFileName').textContent    = filename;
+    // Counts
+    const s = data.settings || {};
+    const counts = [
+      { label:'Clients',     val: (data.clients    ||[]).length },
+      { label:'Bookings',    val: (data.bookings   ||[]).length },
+      { label:'Memberships', val: (data.memberships||[]).length },
+      { label:'Invoices',    val: (data.invoices   ||[]).length },
+      { label:'Intake',      val: (data.intake     ||[]).length },
+      { label:'Services',    val: (s.services      ||[]).length }
+    ];
+    document.getElementById('restorePreviewCounts').innerHTML = counts.map(c=>
+      `<div class="acct-backup-count" style="background:#dcfce7;">
+         <div class="acct-backup-count-num" style="color:#16a34a;">${c.val}</div>
+         <div class="acct-backup-count-label">${c.label}</div>
+       </div>`
+    ).join('');
+    // Meta
+    const exported = data._exported ? new Date(data._exported).toLocaleString('en-ZA',{dateStyle:'medium',timeStyle:'short'}) : 'Unknown date';
+    const hasSettings = !!(s.business || s.services || s.therapists || s.hours);
+    const hasUsers    = !!(data.users && data.users.length);
+    document.getElementById('restorePreviewMeta').innerHTML =
+      `<strong>Exported:</strong> ${exported}<br>
+       <strong>Includes settings:</strong> ${hasSettings ? '✓ Yes — business info, services, therapists, hours' : '✗ No'}<br>
+       <strong>Includes login accounts:</strong> ${hasUsers ? `✓ Yes — ${data.users.length} account${data.users.length===1?'':'s'}` : '✗ No'}`;
+  },
+
+  /* Clear the preview, show drop zone again */
+  clearRestore() {
+    this._pendingRestoreData = null;
+    document.getElementById('restoreDropzone').style.display = 'block';
+    document.getElementById('restorePreview').style.display  = 'none';
+  },
+
+  /* User clicks "Restore Everything" — apply the pending backup */
+  confirmRestore() {
+    if(!this._pendingRestoreData) return;
+    const { data, filename } = this._pendingRestoreData;
+    // Use the iCloudBackup full restore engine
+    iCloudBackup._applyRestore(data, filename);
+    this.clearRestore();
+    this.refreshCounts();
   },
 
   confirmPurge() {
