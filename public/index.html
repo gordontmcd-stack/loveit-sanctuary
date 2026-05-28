@@ -274,6 +274,39 @@ svg { display: block; flex-shrink: 0; }
 .danger-zone-box { background: #fef2f2; border: 1px solid #fca5a5; border-radius: var(--radius-sm); padding: 10px 12px; }
 .danger-zone-box p { font-size: 11px; color: #7f1d1d; margin-bottom: 8px; line-height: 1.5; }
 
+/* iCloud Backup UI */
+.icloud-setup-box {
+  background: var(--sage-pale);
+  border: 1px dashed var(--sage);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  text-align: center;
+}
+.icloud-setup-box p { font-size: 11px; color: var(--mid); margin-bottom: 10px; line-height: 1.5; }
+.icloud-connected-box {
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+.icloud-connected-box .icloud-folder { font-size: 11px; font-weight: 600; color: var(--success); word-break: break-all; }
+.icloud-connected-box .icloud-meta  { font-size: 10px; color: var(--mid); margin-top: 3px; }
+.icloud-file-list { margin-top: 8px; }
+.icloud-file-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.icloud-file-item:hover { background: var(--sage-pale); }
+.icloud-file-item svg { color: var(--sage); flex-shrink: 0; }
+.icloud-file-name { flex: 1; font-weight: 500; color: var(--dark); }
+.icloud-file-date { font-size: 10px; color: var(--light); }
+.icloud-no-backups { font-size: 11px; color: var(--light); text-align: center; padding: 10px; }
+
 /* MAIN CONTENT */
 .main-content {
   margin-left: var(--sidebar-w);
@@ -2190,6 +2223,17 @@ canvas#sigCanvas { display: block; width: 100%; touch-action: none; }
       <input type="file" id="acctRestoreFile" accept=".json" style="display:none" onchange="AccountPanel.restoreBackup(this)">
     </div>
 
+    <!-- iCloud Auto-Backup -->
+    <div class="acct-section" id="icloudSection">
+      <div class="acct-section-title">
+        <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
+        iCloud Auto-Backup
+      </div>
+      <div id="icloudStatusBox">
+        <!-- filled by JS -->
+      </div>
+    </div>
+
     <!-- Danger Zone -->
     <div class="acct-section">
       <div class="acct-section-title" style="color:var(--error);">
@@ -2375,6 +2419,8 @@ const App = {
     s('memberships', this.memberships);
     s('invoices',    this.invoices);
     s('intake',      this.intake);
+    // Trigger iCloud auto-backup (debounced)
+    if(window.iCloudBackup) iCloudBackup._scheduleSave();
   },
 
   uid(pfx) { return pfx + Date.now().toString(36); },
@@ -4012,6 +4058,361 @@ App.navigate = function(page) {
   if(page==='users') Auth.renderUsers();
 };
 
+/* ── ICLOUD AUTO-BACKUP ──────────────────────────────── */
+const iCloudBackup = {
+  DB_NAME:   'ls_icloud_db',
+  DB_VER:    1,
+  STORE:     'dir_handles',
+  HANDLE_KEY:'loveit_icloud_dir',
+  MAX_FILES: 30,
+  _saveTimer: null,
+  _dirHandle: null,
+
+  /* ── IndexedDB helpers ── */
+  _openDB() {
+    return new Promise((res,rej) => {
+      const req = indexedDB.open(this.DB_NAME, this.DB_VER);
+      req.onupgradeneeded = e => e.target.result.createObjectStore(this.STORE);
+      req.onsuccess = e => res(e.target.result);
+      req.onerror   = e => rej(e.target.error);
+    });
+  },
+  async _saveHandle(handle) {
+    const db = await this._openDB();
+    return new Promise((res,rej) => {
+      const tx = db.transaction(this.STORE,'readwrite');
+      tx.objectStore(this.STORE).put(handle, this.HANDLE_KEY);
+      tx.oncomplete = res; tx.onerror = e => rej(e.target.error);
+    });
+  },
+  async _loadHandle() {
+    const db = await this._openDB();
+    return new Promise((res,rej) => {
+      const tx  = db.transaction(this.STORE,'readonly');
+      const req = tx.objectStore(this.STORE).get(this.HANDLE_KEY);
+      req.onsuccess = e => res(e.target.result||null);
+      req.onerror   = e => rej(e.target.error);
+    });
+  },
+  async _clearHandle() {
+    const db = await this._openDB();
+    return new Promise((res,rej) => {
+      const tx = db.transaction(this.STORE,'readwrite');
+      tx.objectStore(this.STORE).delete(this.HANDLE_KEY);
+      tx.oncomplete = res; tx.onerror = e => rej(e.target.error);
+    });
+  },
+
+  /* ── Verify we still have permission ── */
+  async _verifyPermission(handle) {
+    try {
+      const perm = await handle.queryPermission({ mode:'readwrite' });
+      if(perm === 'granted') return true;
+      const req = await handle.requestPermission({ mode:'readwrite' });
+      return req === 'granted';
+    } catch { return false; }
+  },
+
+  /* ── Build the complete backup payload ── */
+  _buildPayload() {
+    const now = new Date();
+    return {
+      _schema:      'loveit-sanctuary-backup-v2',
+      _version:     '2.0',
+      _exported:    now.toISOString(),
+      _system:      'Loveit Sanctuary Wellness Management',
+      _description: 'Complete system backup. Restore via My Account → iCloud Auto-Backup → select file → Restore.',
+      _fields: {
+        clients:     'Array of client records',
+        bookings:    'Array of appointment bookings',
+        memberships: 'Array of membership records',
+        invoices:    'Array of invoice records',
+        intake:      'Array of intake / health forms',
+        settings: {
+          business:   'Business info (name, address, phone, email, etc.)',
+          hours:      'Working hours per day of week',
+          services:   'Treatment/service definitions with pricing',
+          therapists: 'Therapist profiles'
+        },
+        users: 'Login accounts (passwords are hashed — never plain text)'
+      },
+      clients:     App.clients,
+      bookings:    App.bookings,
+      memberships: App.memberships,
+      invoices:    App.invoices,
+      intake:      App.intake,
+      settings: {
+        business:   JSON.parse(localStorage.getItem('ls_business')  ||'null') || {},
+        hours:      JSON.parse(localStorage.getItem('ls_hours')     ||'null') || {},
+        services:   JSON.parse(localStorage.getItem('ls_services')  ||'null') || [],
+        therapists: JSON.parse(localStorage.getItem('ls_therapists')||'null') || []
+      },
+      users: Auth.loadUsers().map(u => ({...u})) // includes hashed pwds
+    };
+  },
+
+  /* ── Write one backup file, prune old ones ── */
+  async _writeBackup(dirHandle) {
+    const payload  = this._buildPayload();
+    const now      = new Date();
+    const pad      = n => String(n).padStart(2,'0');
+    const stamp    = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
+    const filename = `loveit-backup-${stamp}.json`;
+    const json     = JSON.stringify(payload, null, 2);
+    // Write new file
+    const fh = await dirHandle.getFileHandle(filename, { create:true });
+    const wr = await fh.createWritable();
+    await wr.write(json);
+    await wr.close();
+    // Prune: keep only the newest MAX_FILES backups
+    const allFiles = [];
+    for await(const entry of dirHandle.values()) {
+      if(entry.kind==='file' && entry.name.startsWith('loveit-backup-') && entry.name.endsWith('.json')) {
+        allFiles.push(entry.name);
+      }
+    }
+    allFiles.sort().reverse(); // newest first
+    for(const old of allFiles.slice(this.MAX_FILES)) {
+      try { await dirHandle.removeEntry(old); } catch {}
+    }
+    // Persist last-backup time
+    localStorage.setItem('ls_icloud_last', now.toISOString());
+    localStorage.setItem('ls_icloud_folder', dirHandle.name);
+    return filename;
+  },
+
+  /* ── Debounced auto-save (called from App.save) ── */
+  _scheduleSave() {
+    clearTimeout(this._saveTimer);
+    this._saveTimer = setTimeout(() => this._autoSave(), 3000);
+  },
+
+  async _autoSave() {
+    try {
+      if(!this._dirHandle) {
+        this._dirHandle = await this._loadHandle();
+      }
+      if(!this._dirHandle) return; // not set up yet
+      const ok = await this._verifyPermission(this._dirHandle);
+      if(!ok) { this._dirHandle = null; return; }
+      await this._writeBackup(this._dirHandle);
+    } catch(err) {
+      console.warn('iCloud auto-backup failed:', err);
+    }
+  },
+
+  /* ── User initiates setup: pick folder ── */
+  async setup() {
+    if(!('showDirectoryPicker' in window)) {
+      alert('Your browser does not support folder access.\n\nPlease use Safari 15.2+ or Chrome 86+ on your Mac.');
+      return;
+    }
+    try {
+      const handle = await window.showDirectoryPicker({
+        id: 'loveit-icloud',
+        mode: 'readwrite',
+        startIn: 'desktop'
+      });
+      this._dirHandle = handle;
+      await this._saveHandle(handle);
+      localStorage.setItem('ls_icloud_folder', handle.name);
+      // Immediately write first backup
+      const fname = await this._writeBackup(handle);
+      toast(`iCloud backup connected. First backup saved: ${fname}`, 'success');
+      this.renderStatus();
+    } catch(e) {
+      if(e.name !== 'AbortError') toast('Could not connect folder: ' + e.message, 'error');
+    }
+  },
+
+  /* ── Manual save now ── */
+  async saveNow() {
+    try {
+      if(!this._dirHandle) this._dirHandle = await this._loadHandle();
+      if(!this._dirHandle) { toast('No iCloud folder connected.','error'); return; }
+      const ok = await this._verifyPermission(this._dirHandle);
+      if(!ok) { toast('Permission denied — please reconnect your iCloud folder.','error'); this._dirHandle=null; this.renderStatus(); return; }
+      const fname = await this._writeBackup(this._dirHandle);
+      toast(`Backup saved: ${fname}`, 'success');
+      this.renderStatus();
+    } catch(e) {
+      toast('Backup failed: ' + e.message, 'error');
+    }
+  },
+
+  /* ── List backup files in the connected folder ── */
+  async listFiles() {
+    if(!this._dirHandle) this._dirHandle = await this._loadHandle();
+    if(!this._dirHandle) return [];
+    try {
+      const ok = await this._verifyPermission(this._dirHandle);
+      if(!ok) return [];
+      const files = [];
+      for await(const entry of this._dirHandle.values()) {
+        if(entry.kind==='file' && entry.name.startsWith('loveit-backup-') && entry.name.endsWith('.json')) {
+          files.push(entry.name);
+        }
+      }
+      return files.sort().reverse(); // newest first
+    } catch { return []; }
+  },
+
+  /* ── Restore from a specific backup file ── */
+  async restoreFromFile(filename) {
+    if(!this._dirHandle) this._dirHandle = await this._loadHandle();
+    if(!this._dirHandle) { toast('No iCloud folder connected.','error'); return; }
+    try {
+      const ok = await this._verifyPermission(this._dirHandle);
+      if(!ok) { toast('Permission denied.','error'); return; }
+      const fh   = await this._dirHandle.getFileHandle(filename);
+      const file = await fh.getFile();
+      const text = await file.text();
+      const data = JSON.parse(text);
+      this._applyRestore(data, filename);
+    } catch(e) {
+      toast('Restore failed: ' + e.message, 'error');
+    }
+  },
+
+  /* ── Restore from uploaded .json file (fallback) ── */
+  restoreFromUpload(input) {
+    const file = input.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const data = JSON.parse(e.target.result);
+        this._applyRestore(data, file.name);
+      } catch { toast('Invalid backup file.','error'); }
+    };
+    reader.readAsText(file);
+    input.value = '';
+  },
+
+  /* ── Apply a parsed backup payload to the system ── */
+  _applyRestore(data, filename) {
+    if(!data._schema && !data.clients && !data.bookings) {
+      toast('This does not appear to be a valid Loveit Sanctuary backup.','error');
+      return;
+    }
+    if(!confirm(`RESTORE FROM BACKUP\n\nFile: ${filename}\nExported: ${data._exported||'unknown'}\n\nThis will REPLACE all current records with those from this backup.\nLogin accounts will also be restored.\n\nProceed?`)) return;
+
+    // Restore data arrays
+    if(data.clients)     { App.clients     = data.clients;     localStorage.setItem('ls_clients',     JSON.stringify(data.clients)); }
+    if(data.bookings)    { App.bookings    = data.bookings;    localStorage.setItem('ls_bookings',    JSON.stringify(data.bookings)); }
+    if(data.memberships) { App.memberships = data.memberships; localStorage.setItem('ls_memberships', JSON.stringify(data.memberships)); }
+    if(data.invoices)    { App.invoices    = data.invoices;    localStorage.setItem('ls_invoices',    JSON.stringify(data.invoices)); }
+    if(data.intake)      { App.intake      = data.intake;      localStorage.setItem('ls_intake',      JSON.stringify(data.intake)); }
+
+    // Restore settings
+    if(data.settings) {
+      if(data.settings.business)   { BUSINESS   = data.settings.business;   localStorage.setItem('ls_business',   JSON.stringify(BUSINESS)); }
+      if(data.settings.hours)      { HOURS      = data.settings.hours;      localStorage.setItem('ls_hours',      JSON.stringify(HOURS)); }
+      if(data.settings.services)   { SERVICES   = data.settings.services;   localStorage.setItem('ls_services',   JSON.stringify(SERVICES)); }
+      if(data.settings.therapists) { THERAPISTS = data.settings.therapists; localStorage.setItem('ls_therapists', JSON.stringify(THERAPISTS)); }
+    }
+
+    // Restore user accounts
+    if(data.users && data.users.length) {
+      Auth.saveUsers(data.users);
+    }
+
+    App.init();
+    AccountPanel.refreshCounts();
+    toast(`Restore complete from ${filename}`, 'success');
+  },
+
+  /* ── Disconnect iCloud folder ── */
+  async disconnect() {
+    if(!confirm('Disconnect iCloud folder?\n\nAuto-backups will stop. Your existing backup files are safe.')) return;
+    await this._clearHandle();
+    this._dirHandle = null;
+    localStorage.removeItem('ls_icloud_last');
+    localStorage.removeItem('ls_icloud_folder');
+    toast('iCloud folder disconnected.','warning');
+    this.renderStatus();
+  },
+
+  /* ── Render the iCloud section in the Account Panel ── */
+  async renderStatus() {
+    const box = document.getElementById('icloudStatusBox');
+    if(!box) return;
+    if(!this._dirHandle) this._dirHandle = await this._loadHandle().catch(()=>null);
+
+    const hasHandle = !!this._dirHandle;
+    const lastStr   = localStorage.getItem('ls_icloud_last');
+    const folderName= localStorage.getItem('ls_icloud_folder') || 'Connected folder';
+    const lastLabel = lastStr ? (() => {
+      const d = new Date(lastStr);
+      return `Last backup: ${d.toLocaleDateString('en-ZA',{day:'2-digit',month:'short',year:'numeric'})} at ${d.toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'})}`;
+    })() : 'No backup yet';
+
+    if(!hasHandle) {
+      box.innerHTML = `
+        <div class="icloud-setup-box">
+          <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin:0 auto 8px;color:var(--sage);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
+          <p>Connect your iCloud Drive folder so all records are automatically backed up every time data changes. Backups include clients, bookings, invoices, settings &amp; login accounts.</p>
+          <button class="btn btn-primary btn-sm" style="width:100%;justify-content:center;" onclick="iCloudBackup.setup()">
+            Connect iCloud Folder
+          </button>
+          <p style="margin-top:8px;margin-bottom:0;font-size:10px;">Open iCloud Drive → create a folder called <strong>Loveit Sanctuary</strong> → select it</p>
+        </div>`;
+      return;
+    }
+
+    // Has handle — show connected state + file list
+    const files = await this.listFiles();
+    const fileRows = files.length
+      ? files.slice(0,10).map(f => {
+          const match = f.match(/loveit-backup-(\d{4}-\d{2}-\d{2})-(\d{2})(\d{2})\.json/);
+          const label = match ? `${match[1]} at ${match[2]}:${match[3]}` : f;
+          return `<div class="icloud-file-item" onclick="iCloudBackup.restoreFromFile('${f}')">
+            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <span class="icloud-file-name">${label}</span>
+            <span class="icloud-file-date" style="color:var(--sage);font-weight:600;">Restore</span>
+          </div>`;
+        }).join('')
+      : `<div class="icloud-no-backups">No backups yet — click Save Now</div>`;
+
+    box.innerHTML = `
+      <div class="icloud-connected-box">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color:#16a34a;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+          <span class="icloud-folder">${folderName}</span>
+        </div>
+        <div class="icloud-meta">${lastLabel} · Auto-saves on every change</div>
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:8px;">
+        <button class="btn btn-primary btn-sm" style="flex:1;justify-content:center;" onclick="iCloudBackup.saveNow()">Save Now</button>
+        <button class="btn btn-ghost btn-sm" style="flex:1;justify-content:center;" onclick="iCloudBackup.disconnect()">Disconnect</button>
+      </div>
+      <p style="font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--mid);margin-bottom:4px;">Saved Backups — click any to restore</p>
+      <div class="icloud-file-list">${fileRows}</div>
+      ${files.length > 10 ? `<p style="font-size:10px;color:var(--light);text-align:center;padding:4px;">+ ${files.length-10} more files in your iCloud folder</p>` : ''}
+      <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border);">
+        <p style="font-size:10px;color:var(--mid);margin-bottom:6px;">Or restore from a backup file on your device:</p>
+        <button class="acct-action-btn" style="padding:6px 8px;" onclick="document.getElementById('icloudRestoreUpload').click()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+          Upload Backup File
+        </button>
+        <input type="file" id="icloudRestoreUpload" accept=".json" style="display:none" onchange="iCloudBackup.restoreFromUpload(this)">
+      </div>`;
+  },
+
+  /* ── Boot: load handle silently, kick off first auto-save if due ── */
+  async boot() {
+    try {
+      this._dirHandle = await this._loadHandle();
+      if(this._dirHandle) {
+        // Auto-save on login if last backup > 1 hour ago
+        const last = localStorage.getItem('ls_icloud_last');
+        const due  = !last || (Date.now() - new Date(last).getTime()) > 3600000;
+        if(due) this._scheduleSave();
+      }
+    } catch {}
+  }
+};
+
 /* ── MY ACCOUNT PANEL ────────────────────────────────── */
 const AccountPanel = {
   open() {
@@ -4039,6 +4440,8 @@ const AccountPanel = {
     // Clear pwd fields
     ['ap_current','ap_new1','ap_new2'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
     document.getElementById('apPwdError').classList.remove('show');
+    // Render iCloud status
+    iCloudBackup.renderStatus();
     // Show
     document.getElementById('acctOverlay').classList.add('visible');
     document.getElementById('acctPanel').classList.add('visible');
@@ -4164,6 +4567,7 @@ const AccountPanel = {
 
 /* ── INIT ─────────────────────────────────────────────── */
 Auth.boot();
+iCloudBackup.boot();
 </script>
 </body>
 </html>
