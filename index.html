@@ -1219,34 +1219,53 @@ canvas#sigCanvas { display: block; width: 100%; touch-action: none; }
     <div class="grid-2">
       <div>
         <div class="settings-section">
-          <div class="settings-section-title">Business Information</div>
-          <div class="settings-row"><span class="settings-label">Business Name</span><span class="settings-value">Loveit Sanctuary</span></div>
-          <div class="settings-row"><span class="settings-label">Owner</span><span class="settings-value">Candice</span></div>
-          <div class="settings-row"><span class="settings-label">Phone / WhatsApp</span><span class="settings-value">068 904 7292</span></div>
-          <div class="settings-row"><span class="settings-label">Address</span><span class="settings-value">2 Yellowwood Crescent, Diep River, 7800</span></div>
-          <div class="settings-row"><span class="settings-label">City</span><span class="settings-value">Cape Town, South Africa</span></div>
-          <div class="settings-row"><span class="settings-label">Instagram</span><span class="settings-value">@loveitsanctuary</span></div>
+          <div class="settings-section-title" style="display:flex;align-items:center;justify-content:space-between;">
+            Business Information
+            <button class="btn btn-ghost btn-sm" onclick="App.openEditBusiness()">
+              <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+              Edit
+            </button>
+          </div>
+          <div id="businessInfoDisplay"></div>
         </div>
 
         <div class="settings-section">
-          <div class="settings-section-title">Working Hours</div>
+          <div class="settings-section-title" style="display:flex;align-items:center;justify-content:space-between;">
+            Working Hours
+            <button class="btn btn-ghost btn-sm" onclick="App.openHoursModal()">
+              <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+              Edit
+            </button>
+          </div>
           <div id="workingHours"></div>
         </div>
       </div>
 
       <div>
         <div class="settings-section">
-          <div class="settings-section-title">Services & Pricing</div>
+          <div class="settings-section-title" style="display:flex;align-items:center;justify-content:space-between;">
+            Services &amp; Pricing
+            <button class="btn btn-primary btn-sm" onclick="App.openAddService()">
+              <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+              Add Service
+            </button>
+          </div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>Treatment</th><th>Duration</th><th>Price</th></tr></thead>
+              <thead><tr><th>Treatment</th><th>Duration</th><th>Price</th><th></th></tr></thead>
               <tbody id="servicesTable"></tbody>
             </table>
           </div>
         </div>
 
         <div class="settings-section mt-16">
-          <div class="settings-section-title">Therapists</div>
+          <div class="settings-section-title" style="display:flex;align-items:center;justify-content:space-between;">
+            Therapists
+            <button class="btn btn-primary btn-sm" onclick="App.openAddTherapist()">
+              <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+              Add Therapist
+            </button>
+          </div>
           <div id="therapistsList"></div>
         </div>
 
@@ -1766,6 +1785,163 @@ canvas#sigCanvas { display: block; width: 100%; touch-action: none; }
   </div>
 </div>
 
+<!-- EDIT BUSINESS INFO MODAL -->
+<div class="modal-overlay" id="businessModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Edit Business Information</h3>
+      <button class="btn-close-modal" onclick="closeModal('businessModal')">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Business Name</label>
+          <input type="text" class="form-input" id="biz_name" placeholder="e.g. Loveit Sanctuary">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Owner Name</label>
+          <input type="text" class="form-input" id="biz_owner" placeholder="e.g. Candice">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Phone / WhatsApp</label>
+          <input type="tel" class="form-input" id="biz_phone" placeholder="e.g. 068 904 7292">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-input" id="biz_email" placeholder="e.g. hello@loveitspa.co.za">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Street Address</label>
+        <input type="text" class="form-input" id="biz_address" placeholder="e.g. 2 Yellowwood Crescent, Diep River, 7800">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">City</label>
+          <input type="text" class="form-input" id="biz_city" placeholder="e.g. Cape Town, South Africa">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Instagram Handle</label>
+          <input type="text" class="form-input" id="biz_instagram" placeholder="e.g. @loveitsanctuary">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Website</label>
+        <input type="text" class="form-input" id="biz_website" placeholder="e.g. www.loveitspa.co.za">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('businessModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="App.saveBusinessInfo()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+        Save Business Info
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT WORKING HOURS MODAL -->
+<div class="modal-overlay" id="hoursModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Edit Working Hours</h3>
+      <button class="btn-close-modal" onclick="closeModal('hoursModal')">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="hoursModalBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('hoursModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="App.saveWorkingHours()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+        Save Hours
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD / EDIT SERVICE MODAL -->
+<div class="modal-overlay" id="serviceModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="serviceModalTitle">Add Service</h3>
+      <button class="btn-close-modal" onclick="closeModal('serviceModal')">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="svc_idx">
+      <div class="form-group">
+        <label class="form-label">Treatment Name</label>
+        <input type="text" class="form-input" id="svc_name" placeholder="e.g. Aromatherapy Massage">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Duration</label>
+          <input type="text" class="form-input" id="svc_duration" placeholder="e.g. 60 min">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Price</label>
+          <input type="text" class="form-input" id="svc_price" placeholder="e.g. R 580">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('serviceModal')">Cancel</button>
+      <button class="btn btn-danger btn-sm" id="svcDeleteBtn" onclick="App.deleteService()" style="display:none;">
+        <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+        Remove
+      </button>
+      <button class="btn btn-primary" onclick="App.saveService()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+        Save Service
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD / EDIT THERAPIST MODAL -->
+<div class="modal-overlay" id="therapistModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="therapistModalTitle">Add Therapist</h3>
+      <button class="btn-close-modal" onclick="closeModal('therapistModal')">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="th_idx">
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input type="text" class="form-input" id="th_name" placeholder="e.g. Lerato Dlamini">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Role / Title</label>
+        <input type="text" class="form-input" id="th_role" placeholder="e.g. Senior Therapist">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Specialties</label>
+        <input type="text" class="form-input" id="th_specialties" placeholder="e.g. Massage, Facials, Body Treatments">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('therapistModal')">Cancel</button>
+      <button class="btn btn-danger btn-sm" id="thDeleteBtn" onclick="App.deleteTherapist()" style="display:none;">
+        <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+        Remove
+      </button>
+      <button class="btn btn-primary" onclick="App.saveTherapist()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+        Save Therapist
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- EDIT CLIENT MODAL -->
 <div class="modal-overlay" id="editClientModal">
   <div class="modal">
@@ -1892,7 +2068,7 @@ const SEED_INTAKE = [
   { id:'int8', clientId:'c6', type:'Health & Consent', sent:'2023-01-05', status:'Signed',   sigDate:'2023-01-05' }
 ];
 
-const SERVICES = [
+const DEFAULT_SERVICES = [
   { name:'Swedish Massage', duration:'60 min', price:'R 550' },
   { name:'Deep Tissue Massage', duration:'60 min', price:'R 620' },
   { name:'Hot Stone Massage', duration:'90 min', price:'R 680' },
@@ -1904,13 +2080,11 @@ const SERVICES = [
   { name:'Brazilian Wax', duration:'30 min', price:'R 220' },
   { name:'Eyebrow Wax & Shape', duration:'15 min', price:'R 120' }
 ];
-
-const THERAPISTS = [
+const DEFAULT_THERAPISTS = [
   { name:'Candice', role:'Owner & Senior Therapist', specialties:'Massage, Facials' },
   { name:'Lerato',  role:'Therapist', specialties:'Waxing, Facials, Body Treatments' }
 ];
-
-const HOURS = [
+const DEFAULT_HOURS = [
   { day:'Monday',    open:'09:00', close:'16:30', closed:false },
   { day:'Tuesday',   open:'09:00', close:'16:30', closed:false },
   { day:'Wednesday', open:'09:00', close:'16:30', closed:false },
@@ -1919,6 +2093,16 @@ const HOURS = [
   { day:'Saturday',  open:'09:00', close:'13:00', closed:false },
   { day:'Sunday',    open:'',      close:'',      closed:true  }
 ];
+const DEFAULT_BUSINESS = {
+  name:'Loveit Sanctuary', owner:'Candice', phone:'068 904 7292',
+  email:'hello@loveitspa.co.za', address:'2 Yellowwood Crescent, Diep River, 7800',
+  city:'Cape Town, South Africa', instagram:'@loveitsanctuary', website:'www.loveitspa.co.za'
+};
+// Live references — loaded from localStorage, fall back to defaults
+let SERVICES   = JSON.parse(localStorage.getItem('ls_services')   ||'null') || DEFAULT_SERVICES;
+let THERAPISTS = JSON.parse(localStorage.getItem('ls_therapists') ||'null') || DEFAULT_THERAPISTS;
+let HOURS      = JSON.parse(localStorage.getItem('ls_hours')      ||'null') || DEFAULT_HOURS;
+let BUSINESS   = JSON.parse(localStorage.getItem('ls_business')   ||'null') || DEFAULT_BUSINESS;
 
 const MESSAGE_TEMPLATES = [
   {
@@ -2994,6 +3178,20 @@ App.updateReengageBadge=function(){
 
 /* ── SETTINGS ────────────────────────────────────────── */
 App.renderSettings=function(){
+  // Business info
+  const b = BUSINESS;
+  document.getElementById('businessInfoDisplay').innerHTML = `
+    <div class="settings-row"><span class="settings-label">Business Name</span><span class="settings-value">${b.name}</span></div>
+    <div class="settings-row"><span class="settings-label">Owner</span><span class="settings-value">${b.owner}</span></div>
+    <div class="settings-row"><span class="settings-label">Phone / WhatsApp</span><span class="settings-value">${b.phone}</span></div>
+    <div class="settings-row"><span class="settings-label">Email</span><span class="settings-value">${b.email||'—'}</span></div>
+    <div class="settings-row"><span class="settings-label">Address</span><span class="settings-value">${b.address}</span></div>
+    <div class="settings-row"><span class="settings-label">City</span><span class="settings-value">${b.city}</span></div>
+    <div class="settings-row"><span class="settings-label">Instagram</span><span class="settings-value">${b.instagram}</span></div>
+    <div class="settings-row"><span class="settings-label">Website</span><span class="settings-value">${b.website||'—'}</span></div>
+  `;
+
+  // Working hours
   document.getElementById('workingHours').innerHTML=HOURS.map(h=>`
     <div class="settings-row">
       <span class="settings-label">${h.day}</span>
@@ -3001,21 +3199,35 @@ App.renderSettings=function(){
     </div>
   `).join('');
 
-  document.getElementById('servicesTable').innerHTML=SERVICES.map(s=>`
+  // Services
+  document.getElementById('servicesTable').innerHTML=SERVICES.map((s,i)=>`
     <tr>
       <td class="td-name">${s.name}</td>
       <td class="text-sm text-light">${s.duration}</td>
       <td class="fw-500">${s.price}</td>
+      <td>
+        <button class="btn btn-ghost btn-xs" onclick="App.openEditService(${i})">
+          <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+          Edit
+        </button>
+      </td>
     </tr>
   `).join('');
 
-  document.getElementById('therapistsList').innerHTML=THERAPISTS.map(t=>`
+  // Therapists
+  document.getElementById('therapistsList').innerHTML=THERAPISTS.map((t,i)=>`
     <div class="settings-row">
       <div>
         <div class="settings-label">${t.name}</div>
         <div class="text-xs text-light mt-4">${t.specialties}</div>
       </div>
-      <span class="settings-value">${t.role}</span>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="settings-value">${t.role}</span>
+        <button class="btn btn-ghost btn-xs" onclick="App.openEditTherapist(${i})">
+          <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+          Edit
+        </button>
+      </div>
     </div>
   `).join('');
 };
@@ -3351,6 +3563,184 @@ const Auth = {
       this.showLogin();
     }
   }
+};
+
+/* ── SETTINGS EDIT FUNCTIONS ────────────────────────── */
+
+// ── Business Info ──
+App.openEditBusiness = function() {
+  const b = BUSINESS;
+  document.getElementById('biz_name').value      = b.name      || '';
+  document.getElementById('biz_owner').value     = b.owner     || '';
+  document.getElementById('biz_phone').value     = b.phone     || '';
+  document.getElementById('biz_email').value     = b.email     || '';
+  document.getElementById('biz_address').value   = b.address   || '';
+  document.getElementById('biz_city').value      = b.city      || '';
+  document.getElementById('biz_instagram').value = b.instagram || '';
+  document.getElementById('biz_website').value   = b.website   || '';
+  openModal('businessModal');
+};
+
+App.saveBusinessInfo = function() {
+  const name = document.getElementById('biz_name').value.trim();
+  if(!name) { toast('Business name is required.','error'); return; }
+  BUSINESS.name      = name;
+  BUSINESS.owner     = document.getElementById('biz_owner').value.trim();
+  BUSINESS.phone     = document.getElementById('biz_phone').value.trim();
+  BUSINESS.email     = document.getElementById('biz_email').value.trim();
+  BUSINESS.address   = document.getElementById('biz_address').value.trim();
+  BUSINESS.city      = document.getElementById('biz_city').value.trim();
+  BUSINESS.instagram = document.getElementById('biz_instagram').value.trim();
+  BUSINESS.website   = document.getElementById('biz_website').value.trim();
+  localStorage.setItem('ls_business', JSON.stringify(BUSINESS));
+  closeModal('businessModal');
+  this.renderSettings();
+  toast('Business information updated.', 'success');
+};
+
+// ── Working Hours ──
+App.openHoursModal = function() {
+  document.getElementById('hoursModalBody').innerHTML = HOURS.map((h,i) => `
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--cream-dark);">
+      <span style="width:90px;font-size:13px;font-weight:500;color:var(--dark);flex-shrink:0;">${h.day}</span>
+      <label class="toggle-switch" style="flex-shrink:0;">
+        <input type="checkbox" id="hr_closed_${i}" ${h.closed?'':'checked'} onchange="App.toggleDayClosed(${i})">
+        <span class="toggle-slider"></span>
+      </label>
+      <span style="font-size:11px;color:var(--light);width:30px;flex-shrink:0;" id="hr_open_label_${i}">${h.closed?'Off':'On'}</span>
+      <div id="hr_times_${i}" style="display:${h.closed?'none':'flex'};align-items:center;gap:8px;flex:1;">
+        <input type="time" class="form-input" id="hr_open_${i}" value="${h.open}" style="width:110px;padding:6px 8px;font-size:12px;">
+        <span class="text-light" style="font-size:12px;">to</span>
+        <input type="time" class="form-input" id="hr_close_${i}" value="${h.close}" style="width:110px;padding:6px 8px;font-size:12px;">
+      </div>
+    </div>
+  `).join('');
+  openModal('hoursModal');
+};
+
+App.toggleDayClosed = function(i) {
+  const isOpen = document.getElementById('hr_closed_'+i).checked;
+  document.getElementById('hr_times_'+i).style.display = isOpen ? 'flex' : 'none';
+  document.getElementById('hr_open_label_'+i).textContent = isOpen ? 'On' : 'Off';
+};
+
+App.saveWorkingHours = function() {
+  HOURS.forEach((h,i) => {
+    const isOpen = document.getElementById('hr_closed_'+i)?.checked;
+    h.closed = !isOpen;
+    h.open   = isOpen ? (document.getElementById('hr_open_'+i)?.value  || '') : '';
+    h.close  = isOpen ? (document.getElementById('hr_close_'+i)?.value || '') : '';
+  });
+  localStorage.setItem('ls_hours', JSON.stringify(HOURS));
+  closeModal('hoursModal');
+  this.renderSettings();
+  toast('Working hours saved.', 'success');
+};
+
+// ── Services ──
+App.openAddService = function() {
+  document.getElementById('serviceModalTitle').textContent = 'Add Service';
+  document.getElementById('svc_idx').value   = '';
+  document.getElementById('svc_name').value  = '';
+  document.getElementById('svc_duration').value = '';
+  document.getElementById('svc_price').value = '';
+  document.getElementById('svcDeleteBtn').style.display = 'none';
+  openModal('serviceModal');
+};
+
+App.openEditService = function(i) {
+  const s = SERVICES[i];
+  if(!s) return;
+  document.getElementById('serviceModalTitle').textContent = 'Edit Service';
+  document.getElementById('svc_idx').value      = i;
+  document.getElementById('svc_name').value     = s.name;
+  document.getElementById('svc_duration').value = s.duration;
+  document.getElementById('svc_price').value    = s.price;
+  document.getElementById('svcDeleteBtn').style.display = '';
+  openModal('serviceModal');
+};
+
+App.saveService = function() {
+  const name     = document.getElementById('svc_name').value.trim();
+  const duration = document.getElementById('svc_duration').value.trim();
+  const price    = document.getElementById('svc_price').value.trim();
+  if(!name || !duration || !price) { toast('Please fill in all service fields.','error'); return; }
+  const idx = document.getElementById('svc_idx').value;
+  if(idx !== '') {
+    SERVICES[parseInt(idx)] = { name, duration, price };
+  } else {
+    SERVICES.push({ name, duration, price });
+  }
+  localStorage.setItem('ls_services', JSON.stringify(SERVICES));
+  this.seedModals();
+  closeModal('serviceModal');
+  this.renderSettings();
+  toast((idx !== '' ? 'Service updated' : 'Service added') + ' — ' + name + '.', 'success');
+};
+
+App.deleteService = function() {
+  const idx = parseInt(document.getElementById('svc_idx').value);
+  const name = SERVICES[idx]?.name || 'service';
+  if(!confirm('Remove "' + name + '" from services?')) return;
+  SERVICES.splice(idx, 1);
+  localStorage.setItem('ls_services', JSON.stringify(SERVICES));
+  this.seedModals();
+  closeModal('serviceModal');
+  this.renderSettings();
+  toast(name + ' removed from services.', 'success');
+};
+
+// ── Therapists ──
+App.openAddTherapist = function() {
+  document.getElementById('therapistModalTitle').textContent = 'Add Therapist';
+  document.getElementById('th_idx').value         = '';
+  document.getElementById('th_name').value        = '';
+  document.getElementById('th_role').value        = '';
+  document.getElementById('th_specialties').value = '';
+  document.getElementById('thDeleteBtn').style.display = 'none';
+  openModal('therapistModal');
+};
+
+App.openEditTherapist = function(i) {
+  const t = THERAPISTS[i];
+  if(!t) return;
+  document.getElementById('therapistModalTitle').textContent = 'Edit Therapist';
+  document.getElementById('th_idx').value         = i;
+  document.getElementById('th_name').value        = t.name;
+  document.getElementById('th_role').value        = t.role;
+  document.getElementById('th_specialties').value = t.specialties;
+  document.getElementById('thDeleteBtn').style.display = '';
+  openModal('therapistModal');
+};
+
+App.saveTherapist = function() {
+  const name        = document.getElementById('th_name').value.trim();
+  const role        = document.getElementById('th_role').value.trim();
+  const specialties = document.getElementById('th_specialties').value.trim();
+  if(!name) { toast('Therapist name is required.','error'); return; }
+  const idx = document.getElementById('th_idx').value;
+  if(idx !== '') {
+    THERAPISTS[parseInt(idx)] = { name, role, specialties };
+  } else {
+    THERAPISTS.push({ name, role, specialties });
+  }
+  localStorage.setItem('ls_therapists', JSON.stringify(THERAPISTS));
+  this.seedModals();
+  closeModal('therapistModal');
+  this.renderSettings();
+  toast((idx !== '' ? 'Therapist updated' : 'Therapist added') + ' — ' + name + '.', 'success');
+};
+
+App.deleteTherapist = function() {
+  const idx  = parseInt(document.getElementById('th_idx').value);
+  const name = THERAPISTS[idx]?.name || 'therapist';
+  if(!confirm('Remove ' + name + ' from therapists?')) return;
+  THERAPISTS.splice(idx, 1);
+  localStorage.setItem('ls_therapists', JSON.stringify(THERAPISTS));
+  this.seedModals();
+  closeModal('therapistModal');
+  this.renderSettings();
+  toast(name + ' removed.', 'success');
 };
 
 /* ── EDIT CLIENT ─────────────────────────────────────── */
